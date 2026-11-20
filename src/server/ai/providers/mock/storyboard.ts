@@ -228,12 +228,5 @@ export function renderStoryboardSvg(s: SceneContext, faces: StoryboardImages): s
     ${guests(t.extras?.guests, "front")}
   </g></g>
   ${s.time.key === "night" ? `<rect width="1600" height="900" fill="#0d1030" fill-opacity=".28"/>` : ""}
-  <rect x="0" y="852" width="1600" height="48" fill="#FBF9F5" fill-opacity=".85"/>
-  <text x="28" y="884" font-family="Georgia, serif" font-size="22" fill="${INK}">Demo sketch · ${escapeXml(t.name)} · ${escapeXml(s.brideName)} &amp; ${escapeXml(s.groomName)}</text>
-  <text x="1572" y="884" font-family="Arial, sans-serif" font-size="18" fill="#6B655C" text-anchor="end">Switch on the free AI setting for real pictures</text>
 </svg>`;
-}
-
-function escapeXml(text: string): string {
-  return text.replace(/[<>&"']/g, (ch) => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;", '"': "&quot;", "'": "&apos;" })[ch]!);
 }

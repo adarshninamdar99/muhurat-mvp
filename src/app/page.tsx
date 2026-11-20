@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { getDb } from "@/server/db/client";
-import { env } from "@/server/env";
 import { listProjects } from "@/server/services/projects";
 import { NewPreviewForm } from "@/components/home/NewPreviewForm";
 
@@ -15,8 +14,6 @@ export default function HomePage() {
           <span className="font-display text-[28px] font-medium italic">Muhurat</span>
           <span className="text-xs text-muted">for A Lovers Card</span>
         </div>
-        {env.AI_PROVIDER === "mock" && <span className="border border-line px-2.5 py-1 text-xs text-muted">Demo mode</span>}
-        {env.AI_PROVIDER === "cloudflare" && <span className="border border-line px-2.5 py-1 text-xs text-muted">Free AI</span>}
       </header>
 
       <main className="mx-auto grid max-w-5xl grid-cols-[1.1fr_1fr] gap-12 px-7 py-14 max-md:grid-cols-1 max-md:gap-8 max-md:px-4 max-md:py-8">
@@ -34,7 +31,7 @@ export default function HomePage() {
               <b className="text-ink">2.</b> Pick the venue, décor and outfits
             </li>
             <li>
-              <b className="text-ink">3.</b> Draw the shots, play the wedding film, share with family, ask vendors for quotes
+              <b className="text-ink">3.</b> Create the shots, play the wedding film, share with family, ask vendors for quotes
             </li>
           </ol>
         </section>

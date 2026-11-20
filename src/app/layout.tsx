@@ -3,7 +3,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: { default: "Muhurat · Wedding previews for A Lovers Card", template: "%s · Muhurat" },
-  description: "See your wedding before you book it: your faces, your venue, your décor and outfits, in matching pictures and short clips.",
+  description: "See your wedding before you book it: your faces, your venue, your décor and outfits, in matching pictures, a short film and a link the family can vote on.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

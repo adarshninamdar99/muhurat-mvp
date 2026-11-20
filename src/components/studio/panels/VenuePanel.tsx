@@ -25,16 +25,18 @@ export function VenuePanel({ project, setView, activeKey }: PanelProps) {
               <Image src={state.venuePhotoUrl} alt="Your venue" fill unoptimized sizes="320px" className="object-cover" />
             </div>
             {analysing ? (
-              <Spinner label="Reading the venue’s depth…" />
+              <Spinner label="Studying the venue…" />
             ) : (
               <div className="grid grid-cols-2 gap-2">
-                <Button variant="quiet" onClick={() => setView("depth")}>
-                  Depth map
-                </Button>
+                {state.capabilities.realDepth && (
+                  <Button variant="quiet" onClick={() => setView("depth")}>
+                    Depth map
+                  </Button>
+                )}
                 <Button
                   variant="quiet"
                   disabled={!state.shots.some((s) => s.templateKey === activeKey && s.status === "done")}
-                  title="Draw this shot first, then compare it with your venue"
+                  title="Create this shot first, then compare it with your venue"
                   onClick={() => setView("compare")}
                 >
                   Before / after
@@ -61,7 +63,7 @@ export function VenuePanel({ project, setView, activeKey }: PanelProps) {
         onChange={(key) => project.update({ venueKey: key })}
         disabled={Boolean(state.venuePhotoUrl)}
       />
-      <Note>A wide photo taken from where guests sit works best. The depth map shows what’s near and far, so décor lands on the right surfaces.</Note>
+      <Note>A wide photo taken from where guests sit works best. The architecture stays as it is; only the wedding décor is added.</Note>
       <StaleNotice project={project} />
     </>
   );

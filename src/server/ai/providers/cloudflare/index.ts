@@ -22,6 +22,7 @@ import type { AiProvider, GeneratedClip, GeneratedFile, ReferenceImage, ShotRequ
 
 export const CLOUDFLARE_IMAGE_MODEL = "@cf/black-forest-labs/flux-2-klein-4b";
 const OUTPUT = { width: 1024, height: 576 }; // 16:9, 4 output tiles
+const REQUEST_TIMEOUT_MS = 90_000;
 
 /** Today's free allowance is spent. Trying again now would fail too, so the job queue does not retry it. */
 export class AllowanceUsedUpError extends Error {
@@ -84,6 +85,8 @@ export const cloudflareProvider: AiProvider = {
       method: "POST",
       headers: { Authorization: `Bearer ${env.CLOUDFLARE_API_TOKEN}` },
       body: form,
+      // A stuck request should fail (and be retried once) rather than keep the couple waiting.
+      signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
     });
     if (!res.ok) throw await explainError(res);
     const raw = await readImage(res);

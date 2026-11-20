@@ -95,7 +95,7 @@ export function SaveTheDateCard({ state }: { state: ProjectState }) {
   return (
     <div className="flex flex-col gap-3">
       <div className="label-caps">Save-the-date card</div>
-      {!photoUrl && <p className="text-sm text-muted">Draw the “Couple portrait” shot first. It becomes the photo on the card.</p>}
+      {!photoUrl && <p className="text-sm text-muted">Create the “Couple portrait” shot first. It becomes the photo on the card.</p>}
       <canvas ref={canvasRef} width={CARD_W} height={CARD_H} className="w-full border border-line bg-paper" aria-label="Save-the-date card preview" />
       <div className="grid grid-cols-2 gap-3">
         <label className="flex flex-col gap-1 text-sm">

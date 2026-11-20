@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { CAMERA_MOVES, catalog } from "@/config/catalog";
-import { formatInr } from "@/lib/format";
 import type { PanelProps } from "../Studio";
 import { Button } from "@/components/ui/Button";
 import { ChoiceGrid } from "@/components/ui/ChoiceGrid";
@@ -26,10 +25,9 @@ export function VideoPanel({ project, activeKey, playClip }: PanelProps) {
       {shot?.status === "done" ? (
         <Button variant="solid" disabled={project.pending || making} onClick={() => project.makeClip(shot.id, moveKey)}>
           {making ? <Spinner label="Making the clip…" /> : <>Make a clip of “{shotName}”</>}
-          {!making && state.prices.clipInr > 0 && <span className="font-normal opacity-80">· about {formatInr(Math.ceil(state.prices.clipInr))}</span>}
         </Button>
       ) : (
-        <Note tone="warn">Draw “{shotName}” first, then make a clip from it.</Note>
+        <Note tone="warn">Create “{shotName}” first, then make a clip from it.</Note>
       )}
 
       {shotClips.length > 0 && (
@@ -61,9 +59,6 @@ export function VideoPanel({ project, activeKey, playClip }: PanelProps) {
           <dd>{state.capabilities.realVideo ? "about a minute" : "instant"}</dd>
         </div>
       </dl>
-      {!state.capabilities.realVideo && (
-        <Note>On the free setting, a clip is a camera move over the still picture, played in the browser. Real AI video needs the paid fal.ai setting.</Note>
-      )}
       <WeddingFilmButton state={state} />
     </>
   );

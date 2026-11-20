@@ -39,7 +39,7 @@ export function Filmstrip({
                 <Image src={shot.url} alt="" fill sizes="150px" unoptimized className={clsx("object-cover", working && "opacity-40")} />
               ) : (
                 <div className="absolute inset-0 grid place-items-center bg-[repeating-linear-gradient(135deg,#fff,#fff_7px,#f4efe6_7px,#f4efe6_8px)] text-xs text-muted">
-                  {working ? "Drawing…" : shot?.status === "failed" ? "Failed" : "Not drawn"}
+                  {shot?.status === "running" ? "Creating…" : shot?.status === "queued" ? "Next in line" : shot?.status === "failed" ? "Try again" : "Not created"}
                 </div>
               )}
               {shot?.stale && !working && (

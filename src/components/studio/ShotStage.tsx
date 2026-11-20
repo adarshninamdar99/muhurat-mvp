@@ -39,7 +39,8 @@ export function ShotStage({
   const venueName = state.venuePhotoUrl ? "Your venue" : catalog.venue(state.selections.venueKey).name;
   const views: { key: StageView; label: string }[] = [{ key: "picture", label: "Picture" }];
   if (state.venuePhotoUrl && shot?.url) views.push({ key: "compare", label: "Before / after" });
-  if (state.venuePhotoUrl) views.push({ key: "venue", label: "Venue photo" }, { key: "depth", label: "Depth" });
+  if (state.venuePhotoUrl) views.push({ key: "venue", label: "Venue photo" });
+  if (state.venuePhotoUrl && state.capabilities.realDepth) views.push({ key: "depth", label: "Depth" });
 
   return (
     <div className="flex flex-col gap-3">
@@ -83,12 +84,12 @@ export function ShotStage({
               <>
                 <Image src={state.venueDepthUrl} alt="Depth map of your venue: lighter is closer" fill unoptimized sizes="1000px" className="object-cover" />
                 <figcaption className="absolute bottom-3 right-3 bg-surface px-2.5 py-1.5 text-xs">
-                  {state.capabilities.realDepth ? "Lighter is closer to the camera" : "A quick stand-in sketch of the depth. Real depth needs the paid fal.ai setting."}
+                  Lighter is closer to the camera
                 </figcaption>
               </>
             ) : (
               <Centered>
-                <Spinner label="Reading the venue's depth…" />
+                <Spinner label="Studying the venue…" />
               </Centered>
             ))}
           {view === "picture" && (
@@ -120,13 +121,13 @@ export function ShotStage({
               )}
               {!shot?.url && !working && shot?.status !== "failed" && (
                 <Centered>
-                  <p className="text-sm text-muted">Not drawn yet. Go to Shots to draw it.</p>
+                  <p className="text-sm text-muted">Not created yet. Open the Shots step to create it.</p>
                 </Centered>
               )}
               {working && (
                 <Centered>
                   <span className="bg-surface/90 px-3 py-2 text-sm">
-                    <Spinner label={job?.progress ? `${job.progress}…` : shot?.status === "queued" ? "Waiting its turn…" : "Drawing…"} />
+                    <Spinner label={job?.progress ? `${job.progress}…` : shot?.status === "queued" ? "Next in line…" : "Creating your picture…"} />
                   </span>
                 </Centered>
               )}

@@ -12,6 +12,8 @@ const schema = z.object({
   FAL_KEY: z.string().optional().default(""),
   CLOUDFLARE_ACCOUNT_ID: z.string().optional().default(""),
   CLOUDFLARE_API_TOKEN: z.string().optional().default(""),
+  /** Address phones use to open share links, e.g. https://preview.aloverscard.com. Empty: worked out automatically. */
+  PUBLIC_BASE_URL: z.string().url().optional().or(z.literal("")).default(""),
   DATABASE_PATH: z.string().default("./data/muhurat.db"),
   STORAGE_DIR: z.string().default("./data/files"),
   ADMIN_PASSWORD: z.string().default("change-me"),

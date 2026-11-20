@@ -39,9 +39,9 @@ export function WeddingFilmButton({ state }: { state: ProjectState }) {
   return (
     <div className="flex flex-col gap-2 border-t border-line pt-3">
       <div className="label-caps">Our wedding film</div>
-      <p className="text-sm text-muted">All your drawn shots as one short film, with title cards and soft tanpura music. Free, made in your browser.</p>
+      <p className="text-sm text-muted">Every finished shot as one short film, with title cards and soft tanpura in the background. Ready to download and send.</p>
       <Button disabled={shots.length < 2} onClick={() => setOpen(true)}>
-        {shots.length < 2 ? "Draw at least 2 shots to make the film" : `Play the film (${shots.length} shots)`}
+        {shots.length < 2 ? "Create at least 2 shots to make the film" : `Play the film (${shots.length} shots)`}
       </Button>
       {open && <FilmPlayer shots={shots} text={filmText(state)} onClose={() => setOpen(false)} />}
     </div>

@@ -17,7 +17,7 @@ export const analyzeVenue: JobHandler<z.infer<typeof schema>> = {
     const project = db.select().from(projects).where(eq(projects.id, payload.projectId)).get();
     if (!project?.venuePhotoPath) return; // photo was removed meanwhile; nothing to do
     const photoPath = project.venuePhotoPath;
-    progress("Reading the venue's depth");
+    progress("Studying the venue");
     const ai = await getAiProvider();
     const started = Date.now();
     const result = await ai.analyzeVenue({ photo: { label: "the wedding venue", data: await readFile(photoPath), contentType: "image/jpeg" } });

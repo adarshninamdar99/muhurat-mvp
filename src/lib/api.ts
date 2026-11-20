@@ -40,7 +40,7 @@ export const api = {
   makeClip: (id: string, shotId: string, moveKey: string) =>
     call<ProjectState>(`/api/projects/${id}/clips`, jsonInit("POST", { shotId, moveKey })),
   getQuote: (id: string) => call<Quote>(`/api/projects/${id}/quote`, { cache: "no-store" }),
-  shareLink: (id: string) => call<{ path: string }>(`/api/projects/${id}/share`, { method: "POST" }),
+  shareLink: (id: string) => call<{ path: string; url: string; qrSvg: string }>(`/api/projects/${id}/share`, { method: "POST" }),
   getShared: (token: string, voterId: string) =>
     call<SharedView>(`/api/share/${token}?voter=${encodeURIComponent(voterId)}`, { cache: "no-store" }),
   vote: (token: string, body: { templateKey: string; voterId: string; voterName?: string; love: boolean }) =>

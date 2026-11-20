@@ -13,7 +13,7 @@ export function OutfitsPanel({ project }: PanelProps) {
   const groom = catalog.groomOutfit(selections.groomOutfitKey);
   return (
     <>
-      <PanelHeader title="Outfits" help="The same outfits appear in every shot. With a catalogue photo, the AI copies the real product." />
+      <PanelHeader title="Outfits" help="The same outfits appear in every shot. Outfits linked to a catalogue photo appear exactly as sold." />
       <StaleNotice project={project} />
       <ChoiceGrid
         label="Bride"
@@ -41,7 +41,7 @@ export function OutfitsPanel({ project }: PanelProps) {
           )}
         </div>
       )}
-      <Note>Changing an outfit marks drawn shots as out of date. Update them when you’re happy with both outfits.</Note>
+      <Note>Changing an outfit marks finished shots as out of date. Update them when you’re happy with both outfits.</Note>
     </>
   );
 }

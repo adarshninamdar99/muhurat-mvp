@@ -10,7 +10,7 @@ export function DecorPanel({ project }: PanelProps) {
   const { selections } = project.state;
   return (
     <>
-      <PanelHeader title="Décor" help="Pick colours, flowers, mandap and lighting. You can update every drawn shot in one go." />
+      <PanelHeader title="Décor" help="Pick colours, flowers, mandap and lighting. Every finished shot can be updated in one go." />
       <StaleNotice project={project} />
       <ChoiceGrid
         label="Colours"

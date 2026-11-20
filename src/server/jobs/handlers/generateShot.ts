@@ -27,13 +27,13 @@ export const generateShot: JobHandler<z.infer<typeof schema>> = {
     if (!project) return;
 
     db.update(shots).set({ status: "running", error: null, updatedAt: now() }).where(eq(shots.id, shot.id)).run();
-    progress("Collecting photos and choices");
+    progress("Gathering your photos and choices");
     // Fingerprint taken before generating, so later changes still show as out of date.
     const hash = selectionHash(project, photosOf(db, project.id));
     const ai = await getAiProvider();
     const request = await buildShotRequest(db, project, shot, { maxReferences: ai.maxReferences, indexBase: ai.referenceIndexBase });
 
-    progress("Drawing the picture");
+    progress("Creating your picture");
     const started = Date.now();
     const result = await ai.generateShot(request);
     const imagePath = await saveFile(`projects/${project.id}/shots`, result.ext, result.data);
@@ -58,8 +58,12 @@ export const generateShot: JobHandler<z.infer<typeof schema>> = {
   },
 };
 
+/**
+ * The message the couple sees. The technical reason stays in the jobs table,
+ * the server log and the admin page.
+ */
 function friendly(error: Error): string {
-  if (/free AI allowance/i.test(error.message)) return error.message;
-  if (/safety|nsfw|content/i.test(error.message)) return "The AI service declined this picture. Try different photos or choices.";
-  return "The picture could not be made. Please try again.";
+  if (/allowance/i.test(error.message)) return "We’re making a lot of pictures right now. Please try again in a little while.";
+  if (/safety|nsfw|content/i.test(error.message)) return "This picture couldn’t be made from these photos. Try a different photo or choice.";
+  return "This picture couldn’t be made just now. Please try again.";
 }

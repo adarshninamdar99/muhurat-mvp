@@ -125,7 +125,7 @@ const CAPABILITIES = {
 } as const;
 
 /** Pictures made today on Cloudflare's free plan, counted from 00:00 UTC (when the allowance resets). */
-function cloudflareAllowance(db: DB): { picturesToday: number; approxDailyLimit: number } {
+export function cloudflareAllowance(db: DB): { picturesToday: number; approxDailyLimit: number } {
   const startOfUtcDay = new Date();
   startOfUtcDay.setUTCHours(0, 0, 0, 0);
   const row = db
@@ -205,5 +205,12 @@ export function getProjectState(db: DB, id: string): ProjectState {
     capabilities: CAPABILITIES[env.AI_PROVIDER],
     allowance: env.AI_PROVIDER === "cloudflare" ? cloudflareAllowance(db) : null,
     votes: voteCounts(db, id),
+    recentVotes: db
+      .select({ id: votes.id, templateKey: votes.templateKey, voterName: votes.voterName, createdAt: votes.createdAt })
+      .from(votes)
+      .where(and(eq(votes.projectId, id), inArray(votes.templateKey, order)))
+      .orderBy(desc(votes.createdAt))
+      .limit(6)
+      .all(),
   };
 }

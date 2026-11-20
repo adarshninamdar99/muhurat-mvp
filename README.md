@@ -1,4 +1,4 @@
-# Muhurat — wedding previews for A Lovers Card
+# Muhurat: wedding previews for A Lovers Card
 
 Muhurat lets a couple see their wedding before they book it. They add a few photos of themselves and their venue, choose their tradition, muhurat time, décor and outfits, and get six matching pictures of their own rituals. The pictures become a short wedding film, a before/after of their real venue, a save-the-date card and a link the family can vote on. The look they approve becomes a priced décor list that vendors can quote on.
 
@@ -10,7 +10,7 @@ This repository is the working MVP, built by PathAxiom for A Lovers Card.
 | **AI, free** | [Cloudflare Workers AI](https://developers.cloudflare.com/workers-ai/): FLUX.2 [klein] 4B for real pictures, about 80 a day at ₹0. [Setup guide](docs/FREE_AI_SETUP.md) |
 | **AI, paid** | [fal.ai](https://fal.ai): Nano Banana Edit for pictures, Depth Anything V2 for venue depth, Wan 2.2 for clips |
 | **Runs without AI keys** | Yes. Demo mode draws storyboard sketches so every screen works offline and for free |
-| **Tests** | 49 automated tests (Vitest), including full pipeline tests on the demo and free settings |
+| **Tests** | 51 automated tests (Vitest), including full pipeline tests on the demo and free settings |
 
 ![The Shots step in demo mode, with the before/after slider](docs/images/studio-shots.jpg)
 
@@ -134,6 +134,7 @@ Step-by-step recipes: **[docs/EDITING_GUIDE.md](docs/EDITING_GUIDE.md)**.
 | --- | --- |
 | `npm run dev` | Development server with hot reload on http://localhost:3000 |
 | `npm run build` / `npm start` | Production build and server |
+| `npm run demo` | Build and start in one go: use this for client demos (fast, no developer overlay) |
 | `npm run check` | Type-check + lint + tests (run before every pull request) |
 | `npm test` | Tests only |
 | `npm run db:generate` | Create a migration after changing `schema.ts` |
@@ -143,6 +144,8 @@ Step-by-step recipes: **[docs/EDITING_GUIDE.md](docs/EDITING_GUIDE.md)**.
 ---
 
 ## Documentation
+
+- **[Meeting day guide](docs/DEMO_DAY.md)**: checklist, 15-minute walkthrough and backup plan for showing the demo
 
 - **[Architecture](docs/ARCHITECTURE.md)**: how the pieces fit, the data model, the job queue, design decisions
 - **[Free AI setup](docs/FREE_AI_SETUP.md)**: real AI pictures at no cost with Cloudflare, step by step

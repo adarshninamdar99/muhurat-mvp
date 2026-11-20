@@ -11,7 +11,7 @@ vi.hoisted(() => {
 import sharp from "sharp";
 import { eq } from "drizzle-orm";
 import { getDb } from "@/server/db/client";
-import { shots } from "@/server/db/schema";
+import { jobs, shots } from "@/server/db/schema";
 import { AllowanceUsedUpError, CLOUDFLARE_IMAGE_MODEL, cloudflareProvider } from "@/server/ai/providers/cloudflare";
 import { drainQueue } from "@/server/jobs/worker";
 import { addPhoto, createProject, getProjectState } from "@/server/services/projects";
@@ -121,7 +121,7 @@ describe("the app on the free setting", () => {
     expect(state.allowance?.approxDailyLimit).toBeGreaterThan(50);
   });
 
-  it("does not retry when the allowance is used up, and tells the couple when it resets", async () => {
+  it("does not retry when the allowance is used up, and keeps the technical reason off the couple's screen", async () => {
     const calls = stubFetch(async () => new Response("4006: neurons exhausted", { status: 429 }));
     const id = createProject(db, { brideName: "Isha", groomName: "Rohan" }).id;
     requestShots(db, id, ["entry"]);
@@ -129,6 +129,9 @@ describe("the app on the free setting", () => {
     expect(calls).toHaveLength(1);
     const shot = db.select().from(shots).where(eq(shots.projectId, id)).get()!;
     expect(shot.status).toBe("failed");
-    expect(shot.error).toMatch(/free AI allowance is used up/);
+    expect(shot.error).toMatch(/try again in a little while/);
+    expect(shot.error).not.toMatch(/AI|Cloudflare|allowance/);
+    const job = db.select().from(jobs).where(eq(jobs.projectId, id)).get()!;
+    expect(job.error).toMatch(/free AI allowance is used up/);
   });
 });

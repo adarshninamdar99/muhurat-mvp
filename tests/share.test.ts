@@ -5,6 +5,7 @@ import { createProject, getProjectState } from "@/server/services/projects";
 import { requestShots } from "@/server/services/shots";
 import { castVote, getOrCreateShareToken, getSharedView } from "@/server/services/share";
 import { NotFoundError, UserError } from "@/server/services/errors";
+import { lanAddress, publicBaseUrl } from "@/server/publicUrl";
 
 describe("family share page", () => {
   const db = getDb();
@@ -36,6 +37,9 @@ describe("family share page", () => {
     expect(mine.shots.find((s) => s.templateKey === "varmala")).toMatchObject({ votes: 2, mine: true });
     expect(mine.shots.find((s) => s.templateKey === "entry")).toMatchObject({ votes: 1, mine: false });
     expect(getProjectState(db, id).votes).toEqual({ varmala: 2, entry: 1 });
+    const recent = getProjectState(db, id).recentVotes;
+    expect(recent).toHaveLength(3);
+    expect(recent.some((v) => v.voterName === "Asha aunty" && v.templateKey === "varmala")).toBe(true);
 
     castVote(db, token, { templateKey: "varmala", voterId: "voter-aaaa-1", love: false });
     expect(getProjectState(db, id).votes.varmala).toBe(1);
@@ -45,5 +49,17 @@ describe("family share page", () => {
     const id = createProject(db, { brideName: "Lata", groomName: "Om" }).id;
     const token = getOrCreateShareToken(db, id);
     expect(() => castVote(db, token, { templateKey: "thali", voterId: "voter-cccc-3", love: true })).toThrow(UserError);
+  });
+});
+
+describe("links that open on a phone", () => {
+  it("uses the address the request came in on", () => {
+    expect(publicBaseUrl(new Request("https://preview.example.com/api/x"))).toBe("https://preview.example.com");
+  });
+
+  it("swaps localhost for this computer's Wi-Fi address when there is one", () => {
+    const base = publicBaseUrl(new Request("http://localhost:3000/api/x"));
+    const lan = lanAddress();
+    expect(base).toBe(lan ? `http://${lan}:3000` : "http://localhost:3000");
   });
 });

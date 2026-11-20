@@ -74,6 +74,8 @@ export interface ProjectState {
   allowance: { picturesToday: number; approxDailyLimit: number } | null;
   /** Family "love it" counts per shot template key, from the share page. */
   votes: Record<string, number>;
+  /** Latest family votes, newest first (for the live feed on the Share step). */
+  recentVotes: { id: string; templateKey: string; voterName: string | null; createdAt: number }[];
 }
 
 export interface QuoteLine {

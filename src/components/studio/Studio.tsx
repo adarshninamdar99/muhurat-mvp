@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { ANCHOR_SHOT_KEY, catalog } from "@/config/catalog";
-import { formatInr } from "@/lib/format";
 import type { ClipDTO, ProjectState } from "@/lib/types";
 import { Button } from "@/components/ui/Button";
 import { ToastProvider } from "@/components/ui/Toast";
@@ -141,27 +140,11 @@ function StudioInner({ initial, step }: { initial: ProjectState; step: StepKey }
         <aside className="flex flex-col gap-5 border-l border-line bg-surface px-6 py-6 max-md:border-l-0 max-md:border-t max-md:px-4">
           <Panel project={project} activeKey={activeKey} setActiveKey={selectShot} playClip={setClip} setView={setView} />
           <p className="mt-auto border-t border-line pt-3.5 text-[13px] text-muted">
-            So far: <b className="text-ink">{state.spend.images}</b> pictures and <b className="text-ink">{state.spend.clips}</b> clips,{" "}
-            {state.provider === "mock" ? (
-              <>in free demo mode.</>
-            ) : state.provider === "cloudflare" ? (
-              <>
-                all <b className="text-ink">free</b>.
-              </>
-            ) : (
-              <>
-                about <b className="text-ink">{formatInr(state.spend.inr, 2)}</b> in AI costs.
-              </>
-            )}
+            Everything is saved as you go. Use ← and → to move between steps.
           </p>
         </aside>
       </main>
 
-      {state.provider === "mock" && (
-        <footer className="border-t border-line px-7 py-3 text-xs text-muted max-md:px-4">
-          Demo mode: pictures are storyboard sketches. For real AI pictures at no cost, switch to the free Cloudflare setting (see docs/FREE_AI_SETUP.md).
-        </footer>
-      )}
     </div>
   );
 }

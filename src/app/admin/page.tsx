@@ -4,13 +4,18 @@ import { getDb } from "@/server/db/client";
 import { env } from "@/server/env";
 import { adminOverview } from "@/server/services/usage";
 import { formatInr } from "@/lib/format";
+import { cloudflareAllowance } from "@/server/services/projects";
+
+const PROVIDER_LABEL = { mock: "demo sketches", cloudflare: "Cloudflare Workers AI (free)", fal: "fal.ai (paid)" } as const;
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Admin", robots: { index: false } };
 
 /** Usage, cost and failures across all previews. Protected by src/middleware.ts. */
 export default function AdminPage() {
-  const { totals, projectCount, perProject, failedJobs } = adminOverview(getDb());
+  const db = getDb();
+  const { totals, projectCount, perProject, failedJobs } = adminOverview(db);
+  const allowance = env.AI_PROVIDER === "cloudflare" ? cloudflareAllowance(db) : null;
   const tiles = [
     { label: "Previews", value: String(projectCount) },
     { label: "Pictures made", value: String(totals?.images ?? 0) },
@@ -27,7 +32,15 @@ export default function AdminPage() {
           </Link>
           <h1 className="font-display text-4xl font-medium">Admin</h1>
         </div>
-        <span className="text-sm text-muted">AI provider: {env.AI_PROVIDER === "fal" ? "fal.ai" : "demo mode"}</span>
+        <span className="text-right text-sm text-muted">
+          AI provider: {PROVIDER_LABEL[env.AI_PROVIDER]}
+          {allowance && (
+            <>
+              <br />
+              Free pictures today: about {allowance.picturesToday} of {allowance.approxDailyLimit} (resets 5:30 am IST)
+            </>
+          )}
+        </span>
       </header>
 
       <section className="mb-10 grid grid-cols-5 gap-px border border-line bg-line max-md:grid-cols-2" aria-label="Totals">

@@ -1,6 +1,5 @@
 "use client";
 
-import { formatInr } from "@/lib/format";
 import { Button } from "@/components/ui/Button";
 import type { ProjectActions } from "../useProjectState";
 
@@ -8,7 +7,6 @@ import type { ProjectActions } from "../useProjectState";
 export function StaleNotice({ project }: { project: ProjectActions }) {
   const stale = project.state.shots.filter((s) => s.stale);
   if (stale.length === 0) return null;
-  const cost = stale.length * project.state.prices.imageInr;
   return (
     <div className="flex flex-col gap-2 border border-haldi/60 bg-[#fbf3e3] p-3 text-sm">
       <p>
@@ -16,7 +14,6 @@ export function StaleNotice({ project }: { project: ProjectActions }) {
       </p>
       <Button variant="solid" disabled={project.pending || project.busy} onClick={() => project.drawShots(stale.map((s) => s.templateKey))}>
         Update {stale.length} picture{stale.length === 1 ? "" : "s"}
-        {cost > 0 && <span className="font-normal opacity-80">· about {formatInr(Math.ceil(cost))}</span>}
       </Button>
     </div>
   );

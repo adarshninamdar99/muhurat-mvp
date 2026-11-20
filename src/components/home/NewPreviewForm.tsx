@@ -31,7 +31,7 @@ export function NewPreviewForm() {
   };
 
   return (
-    <form onSubmit={submit} className="flex flex-col gap-5 border border-line bg-surface p-6" noValidate>
+    <form onSubmit={submit} className="flex flex-col gap-5 self-start border border-line bg-surface p-6" noValidate>
       <h2 className="font-display text-2xl font-medium">Start a new preview</h2>
       <div className="grid grid-cols-2 gap-5 max-sm:grid-cols-1">
         <Field id="bride" label="Bride’s name" value={bride} onChange={setBride} />

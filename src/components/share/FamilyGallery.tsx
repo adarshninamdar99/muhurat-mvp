@@ -91,7 +91,7 @@ export function FamilyGallery({ token, initial }: { token: string; initial: Shar
       </header>
 
       {view.shots.length === 0 ? (
-        <p className="text-center text-muted">No pictures yet. Ask the couple to draw their shots, then open this link again.</p>
+        <p className="text-center text-muted">No pictures yet. Check back soon: the pictures are still being made.</p>
       ) : (
         <ul className="grid grid-cols-2 gap-5 max-md:grid-cols-1">
           {view.shots.map((s) => (

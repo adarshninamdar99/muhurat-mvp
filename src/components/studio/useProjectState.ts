@@ -42,6 +42,14 @@ export function useProjectState(initial: ProjectState) {
     };
   }, [busy, id, state]);
 
+  const reload = useCallback(async () => {
+    try {
+      setState(await api.getProject(id));
+    } catch {
+      // Network blip: try again next time.
+    }
+  }, [id]);
+
   /** Runs one action, updates state from the response, shows errors as a message. */
   const act = useCallback(
     async (fn: () => Promise<ProjectState>, success?: string) => {
@@ -67,11 +75,13 @@ export function useProjectState(initial: ProjectState) {
     update: (changes: Partial<Selections> & { brideName?: string; groomName?: string }) => act(() => api.updateProject(id, changes)),
     uploadPhoto: (person: "bride" | "groom", file: File) => act(() => api.uploadPhoto(id, person, file), "Photo added"),
     removePhoto: (photoId: string) => act(() => api.removePhoto(id, photoId), "Photo removed"),
-    uploadVenue: (file: File) => act(() => api.uploadVenue(id, file), "Venue photo added. Reading its depth…"),
+    uploadVenue: (file: File) => act(() => api.uploadVenue(id, file), "Venue photo added"),
     clearVenue: () => act(() => api.clearVenue(id), "Venue photo removed"),
     drawShots: (keys: string[]) => act(() => api.drawShots(id, keys)),
     makeClip: (shotId: string, moveKey: string) => act(() => api.makeClip(id, shotId, moveKey)),
     refresh: () => act(() => api.getProject(id)),
+    /** Fetches the latest state without disabling buttons (for live updates). */
+    reload,
   };
 }
 
