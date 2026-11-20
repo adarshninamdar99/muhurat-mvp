@@ -8,7 +8,9 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    // suppressHydrationWarning: browser extensions (password managers, Grammarly, colour pickers…)
+    // add their own attributes to <html> and <body>, which React would otherwise report as a mismatch.
+    <html lang="en" suppressHydrationWarning>
       <head>
         {/* Fonts load from Google Fonts; the fallbacks in tailwind.config.ts show until they arrive. */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -18,7 +20,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..700;1,6..96,400..600&family=Work+Sans:wght@400;500;600&display=swap"
         />
       </head>
-      <body>{children}</body>
+      <body suppressHydrationWarning>{children}</body>
     </html>
   );
 }
