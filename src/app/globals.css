@@ -1,0 +1,31 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html { -webkit-text-size-adjust: 100%; }
+  body { @apply bg-paper text-ink font-body antialiased; }
+  :focus-visible { outline: 2px solid theme("colors.sindoor"); outline-offset: 2px; }
+}
+
+@layer components {
+  .label-caps { @apply text-xs font-semibold uppercase tracking-[0.12em] text-muted; }
+  .sr-only-focusable:focus-visible + label { outline: 2px solid theme("colors.sindoor"); outline-offset: 2px; }
+}
+
+/* Demo-mode clip previews: the still is animated with the chosen camera move. */
+@keyframes move-dolly { from { transform: scale(1); } to { transform: scale(1.18); } }
+@keyframes move-orbit { 0% { transform: scale(1.12) translateX(-4%); } 100% { transform: scale(1.12) translateX(4%); } }
+@keyframes move-crane { from { transform: scale(1.15) translateY(-5%); } to { transform: scale(1.05) translateY(0); } }
+@keyframes move-pan { from { transform: scale(1.12) translateX(5%); } to { transform: scale(1.12) translateX(-5%); } }
+.move-dolly { animation: move-dolly 5s ease-in-out both; }
+.move-orbit { animation: move-orbit 5s ease-in-out both; }
+.move-crane { animation: move-crane 5s ease-in-out both; }
+.move-pan { animation: move-pan 5s ease-in-out both; }
+
+@keyframes develop { from { filter: blur(8px) saturate(0.6); opacity: 0.6; } to { filter: none; opacity: 1; } }
+.develop { animation: develop 700ms ease-out both; }
+
+@media (prefers-reduced-motion: reduce) {
+  .move-dolly, .move-orbit, .move-crane, .move-pan, .develop { animation: none; }
+}
