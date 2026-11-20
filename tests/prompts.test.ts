@@ -6,6 +6,8 @@ import type { SceneContext } from "@/server/ai/types";
 const scene = (overrides: Partial<SceneContext> = {}): SceneContext => ({
   brideName: "Priya",
   groomName: "Arjun",
+  tradition: catalog.tradition("north"),
+  time: catalog.time("golden"),
   venue: catalog.venue("palace"),
   venueFromPhoto: false,
   theme: catalog.theme("marigold"),

@@ -1,6 +1,6 @@
 "use client";
 
-import { ANCHOR_SHOT_KEY, catalog, SHOT_TEMPLATES } from "@/config/catalog";
+import { ANCHOR_SHOT_KEY, catalog, shotsFor } from "@/config/catalog";
 import { formatInr } from "@/lib/format";
 import type { PanelProps } from "../Studio";
 import { Button } from "@/components/ui/Button";
@@ -10,8 +10,9 @@ import { StaleNotice } from "./StaleNotice";
 
 export function ShotsPanel({ project, activeKey }: PanelProps) {
   const { state } = project;
+  const list = shotsFor(state.selections.traditionKey);
   const done = state.shots.filter((s) => s.status === "done");
-  const missing = SHOT_TEMPLATES.filter((t) => !done.some((s) => s.templateKey === t.key)).map((t) => t.key);
+  const missing = list.filter((t) => !done.some((s) => s.templateKey === t.key)).map((t) => t.key);
   const active = state.shots.find((s) => s.templateKey === activeKey);
   const working = state.shots.some((s) => s.status === "queued" || s.status === "running");
   const hasFaces = state.photos.some((p) => p.person === "bride") && state.photos.some((p) => p.person === "groom");
@@ -19,22 +20,31 @@ export function ShotsPanel({ project, activeKey }: PanelProps) {
 
   return (
     <>
-      <PanelHeader title="Shots" help="Six moments from the day, drawn with the same couple, outfits and décor." />
+      <PanelHeader
+        title="Shots"
+        help={`Six moments from a ${catalog.tradition(state.selections.traditionKey).name} wedding, drawn with the same couple, outfits and décor.`}
+      />
       <dl className="grid text-sm">
-        <Row label="Drawn" value={`${done.length} of ${SHOT_TEMPLATES.length}`} />
-        <Row label="Cost per picture" value={state.prices.imageInr > 0 ? `about ${formatInr(state.prices.imageInr, 2)}` : "free in demo mode"} />
+        <Row label="Drawn" value={`${done.length} of ${list.length}`} />
+        <Row label="Cost per picture" value={costLabel(state)} />
+        {state.allowance && (
+          <Row
+            label="Free pictures left today"
+            value={`about ${Math.max(0, state.allowance.approxDailyLimit - state.allowance.picturesToday)}`}
+          />
+        )}
       </dl>
 
       {!hasFaces && <Note tone="warn">Add at least one photo of the bride and one of the groom first, so the pictures show their real faces.</Note>}
 
       {missing.length > 0 ? (
         <Button variant="solid" disabled={project.pending || working} onClick={() => project.drawShots(missing)}>
-          {missing.length === SHOT_TEMPLATES.length ? "Draw all 6 shots" : `Draw the other ${missing.length}`}
+          {missing.length === list.length ? `Draw all ${list.length} shots` : `Draw the other ${missing.length}`}
           <span className="font-normal opacity-80">{price(missing.length)}</span>
         </Button>
       ) : (
-        <Button variant="solid" disabled={project.pending || working} onClick={() => project.drawShots(SHOT_TEMPLATES.map((t) => t.key))}>
-          Redraw all 6<span className="font-normal opacity-80">{price(6)}</span>
+        <Button variant="solid" disabled={project.pending || working} onClick={() => project.drawShots(list.map((t) => t.key))}>
+          Redraw all {list.length}<span className="font-normal opacity-80">{price(list.length)}</span>
         </Button>
       )}
       <Button disabled={project.pending || active?.status === "queued" || active?.status === "running"} onClick={() => project.drawShots([activeKey])}>
@@ -53,6 +63,12 @@ export function ShotsPanel({ project, activeKey }: PanelProps) {
       </details>
     </>
   );
+}
+
+function costLabel(state: PanelProps["project"]["state"]): string {
+  if (state.provider === "cloudflare") return "free (daily allowance)";
+  if (state.provider === "mock") return "free in demo mode";
+  return `about ${formatInr(state.prices.imageInr, 2)}`;
 }
 
 function Row({ label, value }: { label: string; value: string }) {

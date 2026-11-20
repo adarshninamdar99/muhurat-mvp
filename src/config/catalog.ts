@@ -100,6 +100,27 @@ export interface ShotTemplate {
   extras?: { garland?: boolean; fire?: boolean; sofa?: boolean; guests?: "aisle" | "family" };
 }
 
+/** A regional wedding tradition: decides which ritual shots are drawn. */
+export interface Tradition {
+  key: string;
+  name: string;
+  sub: string;
+  /** Added to every prompt so clothing, rituals and décor details fit the tradition. */
+  prompt: string;
+  /** Shot template keys, in order. The first must be the anchor ("entry"). */
+  shots: string[];
+}
+
+/** Ceremony time (the muhurat): decides the light in every picture. */
+export interface CeremonyTime {
+  key: string;
+  name: string;
+  sub: string;
+  prompt: string;
+  /** Demo-mode sky colours, top to bottom (overrides the venue's sky). */
+  sky: [Swatch, Swatch, Swatch];
+}
+
 export interface CameraMove {
   key: string;
   name: string;
@@ -308,6 +329,101 @@ export const SHOT_TEMPLATES: ShotTemplate[] = [
     couple: { x: 800, y: 700, scale: 1, gap: 64 },
     extras: { sofa: true },
   },
+  // ── Ritual moments used by specific traditions (see TRADITIONS) ──
+  {
+    key: "malai-maatral",
+    name: "Malai maatral",
+    framing: "Medium shot",
+    prompt: "a medium shot of the bride and groom playfully exchanging heavy flower garlands (malai maatral) on the stage, relatives smiling behind them",
+    camera: { zoom: 1.45, cx: 800, cy: 540 },
+    couple: { x: 800, y: 700, scale: 1, gap: 56 },
+    extras: { garland: true },
+  },
+  {
+    key: "thali",
+    name: "Thali tying",
+    framing: "Close-up, eye level",
+    prompt: "a close-up of the groom tying the sacred thali (mangalsutra) around the seated bride's neck at the auspicious moment, priests and family showering rice and flowers",
+    camera: { zoom: 2.1, cx: 800, cy: 560 },
+    couple: { x: 800, y: 700, scale: 1, gap: 50 },
+    extras: { fire: true },
+  },
+  {
+    key: "shubho-drishti",
+    name: "Shubho drishti",
+    framing: "Medium close-up",
+    prompt: "the shubho drishti moment: the bride, lifted on a wooden piri, lowers the betel leaves covering her face and looks at the groom for the first time",
+    camera: { zoom: 2, cx: 800, cy: 540 },
+    couple: { x: 800, y: 700, scale: 1, gap: 60 },
+  },
+  {
+    key: "sindoor-daan",
+    name: "Sindoor daan",
+    framing: "Close-up",
+    prompt: "a close-up of the groom applying sindoor to the parting of the bride's hair during sindoor daan, the bride's head covered with a red veil",
+    camera: { zoom: 2.4, cx: 800, cy: 545 },
+    couple: { x: 800, y: 700, scale: 1, gap: 44 },
+  },
+  {
+    key: "antarpat",
+    name: "Antarpat",
+    framing: "Medium shot",
+    prompt: "the antarpat moment: a silk cloth held between the bride and groom by relatives as the mangalashtak is sung, just before it is lowered",
+    camera: { zoom: 1.5, cx: 800, cy: 560 },
+    couple: { x: 800, y: 700, scale: 1, gap: 90 },
+  },
+  {
+    key: "saptapadi",
+    name: "Saptapadi",
+    framing: "Medium shot, low angle",
+    prompt: "the couple taking the seven steps (saptapadi) together beside the sacred fire, the bride's foot touching small mounds of rice",
+    camera: { zoom: 1.55, cx: 800, cy: 580 },
+    couple: { x: 800, y: 705, scale: 0.95, gap: 150 },
+    extras: { fire: true },
+  },
+];
+
+// ─── Traditions ──────────────────────────────────────────────────────────────
+// Each tradition picks six shots. Keep "entry" first (it is the anchor).
+
+export const TRADITIONS: Tradition[] = [
+  {
+    key: "north",
+    name: "North Indian",
+    sub: "Varmala, pheras",
+    prompt: "a North Indian Hindu wedding",
+    shots: ["entry", "varmala", "pheras", "portrait", "family", "reception"],
+  },
+  {
+    key: "south",
+    name: "South Indian",
+    sub: "Malai maatral, thali",
+    prompt: "a South Indian Hindu wedding with banana trees, mango-leaf toranams and kolam patterns",
+    shots: ["entry", "malai-maatral", "thali", "portrait", "family", "reception"],
+  },
+  {
+    key: "bengali",
+    name: "Bengali",
+    sub: "Shubho drishti, sindoor daan",
+    prompt: "a Bengali Hindu wedding with alpana patterns and a red-and-white colour palette in the details",
+    shots: ["entry", "shubho-drishti", "sindoor-daan", "portrait", "family", "reception"],
+  },
+  {
+    key: "marathi",
+    name: "Marathi",
+    sub: "Antarpat, saptapadi",
+    prompt: "a Marathi Hindu wedding, the bride and groom wearing mundavalya (pearl strings) on their foreheads",
+    shots: ["entry", "antarpat", "saptapadi", "portrait", "family", "reception"],
+  },
+];
+
+// ─── Ceremony time (muhurat) ─────────────────────────────────────────────────
+
+export const CEREMONY_TIMES: CeremonyTime[] = [
+  { key: "dawn", name: "Dawn", sub: "Early muhurat, soft pink light", prompt: "at dawn, soft pink and pale blue early-morning light", sky: ["#e8d9e6", "#f4d6cf", "#f8e3c4"] },
+  { key: "morning", name: "Morning", sub: "Bright, clear daylight", prompt: "in bright, clear morning daylight", sky: ["#dfeaf3", "#eef2f2", "#f6f0e2"] },
+  { key: "golden", name: "Golden hour", sub: "Warm low sun before sunset", prompt: "at golden hour, warm low sunlight and long soft shadows", sky: ["#f2e4d2", "#eccdb3", "#e4b48f"] },
+  { key: "night", name: "Night", sub: "Lamps and lights glowing", prompt: "at night, lit by warm lamps, glowing décor lights and a dark sky", sky: ["#1f2340", "#38345a", "#5a4467"] },
 ];
 
 // ─── Video camera moves ──────────────────────────────────────────────────────
@@ -367,6 +483,8 @@ export const VENDOR_LINES: VendorLine[] = [
 // ─── Defaults for a new project ──────────────────────────────────────────────
 
 export const DEFAULT_SELECTIONS = {
+  traditionKey: "north",
+  timeKey: "golden",
   venueKey: "palace",
   themeKey: "marigold",
   flowerKey: "marigold",
@@ -394,12 +512,21 @@ export const catalog = {
   groomOutfit: (key: string) => byKey(GROOM_OUTFITS, key, "groom outfit"),
   shot: (key: string) => byKey(SHOT_TEMPLATES, key, "shot"),
   move: (key: string) => byKey(CAMERA_MOVES, key, "camera move"),
+  tradition: (key: string) => byKey(TRADITIONS, key, "tradition"),
+  time: (key: string) => byKey(CEREMONY_TIMES, key, "ceremony time"),
 };
+
+/** The six shot templates for a tradition, in order. */
+export function shotsFor(traditionKey: string): ShotTemplate[] {
+  return catalog.tradition(traditionKey).shots.map((k) => catalog.shot(k));
+}
 
 export const ANCHOR_SHOT_KEY = SHOT_TEMPLATES[0]!.key;
 
 /** Keys that are valid for each selection field, used to validate API input. */
 export const SELECTION_KEYS = {
+  traditionKey: TRADITIONS.map((v) => v.key),
+  timeKey: CEREMONY_TIMES.map((v) => v.key),
   venueKey: VENUES.map((v) => v.key),
   themeKey: THEMES.map((v) => v.key),
   flowerKey: FLOWERS.map((v) => v.key),

@@ -10,6 +10,8 @@ const patchSchema = z
   .object({
     brideName: z.string().trim().min(1).max(60),
     groomName: z.string().trim().min(1).max(60),
+    traditionKey: oneOf(SELECTION_KEYS.traditionKey),
+    timeKey: oneOf(SELECTION_KEYS.timeKey),
     venueKey: oneOf(SELECTION_KEYS.venueKey),
     themeKey: oneOf(SELECTION_KEYS.themeKey),
     flowerKey: oneOf(SELECTION_KEYS.flowerKey),

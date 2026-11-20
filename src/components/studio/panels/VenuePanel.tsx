@@ -10,7 +10,7 @@ import { Spinner } from "@/components/ui/Spinner";
 import { PanelHeader } from "./PanelHeader";
 import { StaleNotice } from "./StaleNotice";
 
-export function VenuePanel({ project, setView }: PanelProps) {
+export function VenuePanel({ project, setView, activeKey }: PanelProps) {
   const { state } = project;
   const analysing = state.activeJobs.some((j) => j.type === "analyze_venue");
   return (
@@ -27,9 +27,19 @@ export function VenuePanel({ project, setView }: PanelProps) {
             {analysing ? (
               <Spinner label="Reading the venue’s depth…" />
             ) : (
-              <Button variant="quiet" onClick={() => setView("depth")}>
-                See the depth map
-              </Button>
+              <div className="grid grid-cols-2 gap-2">
+                <Button variant="quiet" onClick={() => setView("depth")}>
+                  Depth map
+                </Button>
+                <Button
+                  variant="quiet"
+                  disabled={!state.shots.some((s) => s.templateKey === activeKey && s.status === "done")}
+                  title="Draw this shot first, then compare it with your venue"
+                  onClick={() => setView("compare")}
+                >
+                  Before / after
+                </Button>
+              </div>
             )}
             <div className="grid grid-cols-2 gap-2">
               <UploadButton label="Replace photo" onFile={project.uploadVenue} disabled={project.pending} />

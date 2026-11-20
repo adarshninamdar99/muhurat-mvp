@@ -4,6 +4,8 @@
  */
 
 export interface Selections {
+  traditionKey: string;
+  timeKey: string;
   venueKey: string;
   themeKey: string;
   flowerKey: string;
@@ -63,9 +65,15 @@ export interface ProjectState {
   clips: ClipDTO[];
   activeJobs: JobDTO[];
   spend: { images: number; clips: number; inr: number };
-  /** Cost of one picture / one clip in ₹ with the current provider (0 in demo mode). */
+  /** Cost of one picture / one clip in ₹ with the current provider (0 when free). */
   prices: { imageInr: number; clipInr: number };
-  provider: "fal" | "mock";
+  provider: "fal" | "cloudflare" | "mock";
+  /** What the current AI provider really does; screens label stand-ins honestly. */
+  capabilities: { realPictures: boolean; realDepth: boolean; realVideo: boolean };
+  /** Free-plan usage today (Cloudflare only). */
+  allowance: { picturesToday: number; approxDailyLimit: number } | null;
+  /** Family "love it" counts per shot template key, from the share page. */
+  votes: Record<string, number>;
 }
 
 export interface QuoteLine {
@@ -80,4 +88,14 @@ export interface Quote {
   lines: QuoteLine[];
   totalLow: number;
   totalHigh: number;
+}
+
+/** What the public family share page shows. */
+export interface SharedView {
+  brideName: string;
+  groomName: string;
+  traditionName: string;
+  timeName: string;
+  venueName: string;
+  shots: { templateKey: string; name: string; url: string; votes: number; mine: boolean }[];
 }

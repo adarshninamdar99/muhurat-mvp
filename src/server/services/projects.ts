@@ -1,11 +1,11 @@
 import "server-only";
 import { createHash } from "node:crypto";
-import { and, asc, desc, eq, inArray } from "drizzle-orm";
-import { DEFAULT_SELECTIONS } from "@/config/catalog";
+import { and, asc, desc, eq, gte, inArray, sql } from "drizzle-orm";
+import { catalog, DEFAULT_SELECTIONS } from "@/config/catalog";
 import type { DB } from "@/server/db/client";
-import { clips, jobs, photos, projects, shots, type Photo, type Project } from "@/server/db/schema";
+import { clips, jobs, photos, projects, shots, usageEvents, votes, type Photo, type Project } from "@/server/db/schema";
 import { env } from "@/server/env";
-import { PRICE_USD } from "@/config/pricing";
+import { CLOUDFLARE_FREE, PRICE_USD } from "@/config/pricing";
 import { enqueueJob } from "@/server/jobs/queue";
 import { deleteFile, fileUrl, saveFile } from "@/server/storage/local";
 import { normalizeUpload } from "@/server/storage/images";
@@ -23,6 +23,7 @@ export function createProject(db: DB, input: { brideName: string; groomName: str
     id: newId(),
     brideName: input.brideName.trim(),
     groomName: input.groomName.trim(),
+    shareToken: null,
     ...DEFAULT_SELECTIONS,
     venuePhotoPath: null,
     venueDepthPath: null,
@@ -45,6 +46,8 @@ export function listProjects(db: DB, limit = 20): Project[] {
 
 export function selectionsOf(p: Project): Selections {
   return {
+    traditionKey: p.traditionKey,
+    timeKey: p.timeKey,
     venueKey: p.venueKey,
     themeKey: p.themeKey,
     flowerKey: p.flowerKey,
@@ -114,12 +117,49 @@ export async function clearVenuePhoto(db: DB, projectId: string): Promise<void> 
   for (const old of [project.venuePhotoPath, project.venueDepthPath]) if (old) await deleteFile(old);
 }
 
+/** What each provider really does (mirrors the `capabilities` of each AiProvider). */
+const CAPABILITIES = {
+  mock: { realPictures: false, realDepth: false, realVideo: false },
+  cloudflare: { realPictures: true, realDepth: false, realVideo: false },
+  fal: { realPictures: true, realDepth: true, realVideo: true },
+} as const;
+
+/** Pictures made today on Cloudflare's free plan, counted from 00:00 UTC (when the allowance resets). */
+function cloudflareAllowance(db: DB): { picturesToday: number; approxDailyLimit: number } {
+  const startOfUtcDay = new Date();
+  startOfUtcDay.setUTCHours(0, 0, 0, 0);
+  const row = db
+    .select({ n: sql<number>`count(*)` })
+    .from(usageEvents)
+    .where(and(eq(usageEvents.provider, "cloudflare"), eq(usageEvents.kind, "image"), gte(usageEvents.createdAt, startOfUtcDay.getTime())))
+    .get();
+  return { picturesToday: row?.n ?? 0, approxDailyLimit: CLOUDFLARE_FREE.picturesPerDay };
+}
+
+export function voteCounts(db: DB, projectId: string): Record<string, number> {
+  const rows = db
+    .select({ key: votes.templateKey, n: sql<number>`count(*)` })
+    .from(votes)
+    .where(eq(votes.projectId, projectId))
+    .groupBy(votes.templateKey)
+    .all();
+  return Object.fromEntries(rows.map((r) => [r.key, r.n]));
+}
+
 /** Everything the studio screens need, in one object. */
 export function getProjectState(db: DB, id: string): ProjectState {
   const project = requireProject(db, id);
   const projectPhotos = photosOf(db, id);
   const hash = selectionHash(project, projectPhotos);
-  const shotRows = db.select().from(shots).where(eq(shots.projectId, id)).all();
+  // Only the shots of the couple's tradition are shown. Shots from another
+  // tradition stay saved and come back if the couple switches back.
+  const order = catalog.tradition(project.traditionKey).shots;
+  const shotRows = db
+    .select()
+    .from(shots)
+    .where(and(eq(shots.projectId, id), inArray(shots.templateKey, order)))
+    .all()
+    .sort((a, b) => order.indexOf(a.templateKey) - order.indexOf(b.templateKey));
   const clipRows = db.select().from(clips).where(eq(clips.projectId, id)).orderBy(desc(clips.createdAt)).all();
   const jobRows = db
     .select()
@@ -162,5 +202,8 @@ export function getProjectState(db: DB, id: string): ProjectState {
         ? { imageInr: PRICE_USD.image * env.USD_TO_INR, clipInr: PRICE_USD.clip720p * env.USD_TO_INR }
         : { imageInr: 0, clipInr: 0 },
     provider: env.AI_PROVIDER,
+    capabilities: CAPABILITIES[env.AI_PROVIDER],
+    allowance: env.AI_PROVIDER === "cloudflare" ? cloudflareAllowance(db) : null,
+    votes: voteCounts(db, id),
   };
 }

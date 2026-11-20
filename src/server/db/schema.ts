@@ -13,6 +13,10 @@ export const projects = sqliteTable("projects", {
   brideName: text("bride_name").notNull(),
   groomName: text("groom_name").notNull(),
   // Selections: keys from src/config/catalog.ts
+  /** Secret for the family share page (/share/<token>). Made the first time the couple shares. */
+  shareToken: text("share_token").unique(),
+  traditionKey: text("tradition_key").notNull().default("north"),
+  timeKey: text("time_key").notNull().default("golden"),
   venueKey: text("venue_key").notNull(),
   themeKey: text("theme_key").notNull(),
   flowerKey: text("flower_key").notNull(),
@@ -121,6 +125,21 @@ export const usageEvents = sqliteTable(
   (t) => [index("usage_project_idx").on(t.projectId)],
 );
 
+/** A family member's "love it" on a shot, from the public share page. One per person per shot. */
+export const votes = sqliteTable(
+  "votes",
+  {
+    id: text("id").primaryKey(),
+    projectId: text("project_id").notNull().references(() => projects.id, { onDelete: "cascade" }),
+    templateKey: text("template_key").notNull(),
+    /** Random ID kept in the voter's browser, so one person counts once per shot. */
+    voterId: text("voter_id").notNull(),
+    voterName: text("voter_name"),
+    createdAt: integer("created_at").notNull(),
+  },
+  (t) => [uniqueIndex("votes_unique_idx").on(t.projectId, t.templateKey, t.voterId)],
+);
+
 /** A couple asked vendors to quote on their approved look. */
 export const quoteRequests = sqliteTable("quote_requests", {
   id: text("id").primaryKey(),
@@ -140,3 +159,4 @@ export type Clip = typeof clips.$inferSelect;
 export type Job = typeof jobs.$inferSelect;
 export type UsageEvent = typeof usageEvents.$inferSelect;
 export type QuoteRequest = typeof quoteRequests.$inferSelect;
+export type Vote = typeof votes.$inferSelect;

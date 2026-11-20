@@ -2,15 +2,27 @@
 
 import clsx from "clsx";
 import Image from "next/image";
-import { SHOT_TEMPLATES } from "@/config/catalog";
+import { shotsFor } from "@/config/catalog";
 import { pad2 } from "@/lib/format";
 import type { ShotDTO } from "@/lib/types";
 
 /** The row of six shot thumbnails under the main picture. */
-export function Filmstrip({ shots, active, onSelect }: { shots: ShotDTO[]; active: string; onSelect: (key: string) => void }) {
+export function Filmstrip({
+  shots,
+  traditionKey,
+  votes,
+  active,
+  onSelect,
+}: {
+  shots: ShotDTO[];
+  traditionKey: string;
+  votes: Record<string, number>;
+  active: string;
+  onSelect: (key: string) => void;
+}) {
   return (
     <div className="flex gap-3 overflow-x-auto pb-1" aria-label="All shots">
-      {SHOT_TEMPLATES.map((t, i) => {
+      {shotsFor(traditionKey).map((t, i) => {
         const shot = shots.find((s) => s.templateKey === t.key);
         const on = t.key === active;
         const working = shot?.status === "queued" || shot?.status === "running";
@@ -32,6 +44,11 @@ export function Filmstrip({ shots, active, onSelect }: { shots: ShotDTO[]; activ
               )}
               {shot?.stale && !working && (
                 <span className="absolute left-1 top-1 bg-haldi px-1.5 py-0.5 text-[11px] font-medium text-white">Out of date</span>
+              )}
+              {(votes[t.key] ?? 0) > 0 && (
+                <span className="absolute bottom-1 right-1 bg-surface/95 px-1.5 py-0.5 text-[11px] font-medium text-sindoor" title="Family votes">
+                  ♥ {votes[t.key]}
+                </span>
               )}
             </div>
             <div className={clsx("flex gap-1.5 pt-1.5 text-[13px]", on && "font-semibold")}>

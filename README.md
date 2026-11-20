@@ -1,17 +1,18 @@
 # Muhurat — wedding previews for A Lovers Card
 
-Muhurat lets a couple see their wedding before they book it. They add a few photos of themselves and their venue, pick décor and outfits, and get six matching pictures of their wedding plus short video clips. The look they approve becomes a priced décor list that vendors can quote on.
+Muhurat lets a couple see their wedding before they book it. They add a few photos of themselves and their venue, choose their tradition, muhurat time, décor and outfits, and get six matching pictures of their own rituals. The pictures become a short wedding film, a before/after of their real venue, a save-the-date card and a link the family can vote on. The look they approve becomes a priced décor list that vendors can quote on.
 
 This repository is the working MVP, built by PathAxiom for A Lovers Card.
 
 | | |
 | --- | --- |
 | **Stack** | Next.js 15 (App Router) · React 19 · TypeScript · Tailwind CSS · SQLite with Drizzle ORM |
-| **AI** | [fal.ai](https://fal.ai): Nano Banana Edit for pictures, Depth Anything V2 for venue depth, Wan 2.2 for clips |
+| **AI, free** | [Cloudflare Workers AI](https://developers.cloudflare.com/workers-ai/): FLUX.2 [klein] 4B for real pictures, about 80 a day at ₹0. [Setup guide](docs/FREE_AI_SETUP.md) |
+| **AI, paid** | [fal.ai](https://fal.ai): Nano Banana Edit for pictures, Depth Anything V2 for venue depth, Wan 2.2 for clips |
 | **Runs without AI keys** | Yes. Demo mode draws storyboard sketches so every screen works offline and for free |
-| **Tests** | 32 automated tests (Vitest), including a full pipeline test |
+| **Tests** | 49 automated tests (Vitest), including full pipeline tests on the demo and free settings |
 
-![The Shots step in demo mode](docs/images/studio-shots.jpg)
+![The Shots step in demo mode, with the before/after slider](docs/images/studio-shots.jpg)
 
 ---
 
@@ -27,11 +28,21 @@ cp .env.example .env.local
 npm run dev
 ```
 
-Open http://localhost:3000, type two names, press **Start**, and walk through the seven steps.
+Open http://localhost:3000, type two names, press **Start**, and walk through the eight steps.
 
 The database file and uploaded photos are created automatically under `./data/` (git-ignored).
 
-### Switch on real AI
+### Switch on real AI for free
+
+Follow **[docs/FREE_AI_SETUP.md](docs/FREE_AI_SETUP.md)** (about 5 minutes, no card). In short, in `.env.local`:
+
+```
+AI_PROVIDER=cloudflare
+CLOUDFLARE_ACCOUNT_ID=your-account-id
+CLOUDFLARE_API_TOKEN=your-workers-ai-token
+```
+
+### Or use paid AI (real depth and real video)
 
 1. Create a key at https://fal.ai/dashboard/keys and add credit to the account.
 2. In `.env.local` set:
@@ -49,13 +60,16 @@ Pictures now come from fal.ai at about ₹3.50 each, and clips at about ₹9 eac
 
 | Step | Screen | What happens behind it |
 | --- | --- | --- |
-| 1 | **Couple** | Names and 1–5 photos per person are saved (cleaned to JPEG, max 2048 px) |
+| 1 | **Couple** | Names, 1–5 photos per person (cleaned to JPEG, max 2048 px), **tradition** (North Indian, South Indian, Bengali, Marathi) and **muhurat** time (dawn, morning, golden hour, night) |
 | 2 | **Venue** | Optional venue photo is saved and a **depth map** job runs in the background |
 | 3 | **Décor** | Colours, flowers, mandap and lighting are saved. Drawn shots are flagged “out of date” |
 | 4 | **Outfits** | Bride and groom outfits are saved (optionally linked to catalogue photos) |
-| 5 | **Shots** | Six pictures are drawn. The first (“Grand entry”) is the **anchor**: every other shot gets it as a reference so décor and outfits match |
-| 6 | **Video** | A 5-second clip is made from any finished shot with a chosen camera move |
-| 7 | **Book** | A priced décor list is built from the choices, and a vendor quote request is saved |
+| 5 | **Shots** | Six pictures of the tradition's own rituals (for example malai maatral and thali for South Indian). The first (“Grand entry”) is the **anchor**: every other shot gets it as a reference so décor and outfits match. Above the picture, **Before / after** slides between the empty venue photo and the drawn wedding |
+| 6 | **Video** | A 5-second clip from any finished shot, plus **Our wedding film**: all shots stitched with slow camera moves, title cards and a tanpura drone made in the browser, downloadable as a video |
+| 7 | **Share** | A **family link** where relatives tap ♥ on favourites (counts show on the filmstrip), and a **save-the-date card** from the portrait (PNG download or share) |
+| 8 | **Book** | A priced décor list is built from the choices, and a vendor quote request is saved |
+
+The film, before/after, card and family votes run in the browser or on the app's own server, so they are free on every setting.
 
 ---
 
@@ -101,7 +115,8 @@ docs/                        Architecture, AI pipeline, editing guide, API, depl
 
 | I want to… | Edit |
 | --- | --- |
-| Add a décor theme, flower, outfit, shot or camera move | `src/config/catalog.ts` |
+| Add a décor theme, flower, outfit, shot, tradition, muhurat time or camera move | `src/config/catalog.ts` |
+| Change the wedding film or save-the-date design | `src/components/studio/film/draw.ts`, `src/components/studio/share/saveTheDate.ts` |
 | Change the wording sent to the AI | `src/server/ai/prompts.ts` |
 | Use a different fal.ai model | `src/server/ai/providers/fal/models.ts` (+ input in `fal/index.ts`) |
 | Update AI prices | `src/config/pricing.ts` |
@@ -130,6 +145,7 @@ Step-by-step recipes: **[docs/EDITING_GUIDE.md](docs/EDITING_GUIDE.md)**.
 ## Documentation
 
 - **[Architecture](docs/ARCHITECTURE.md)**: how the pieces fit, the data model, the job queue, design decisions
+- **[Free AI setup](docs/FREE_AI_SETUP.md)**: real AI pictures at no cost with Cloudflare, step by step
 - **[AI pipeline](docs/AI_PIPELINE.md)**: models, prompts, costs, consistency strategy, limits, how to swap models
 - **[Editing guide](docs/EDITING_GUIDE.md)**: recipes for the most common changes
 - **[API reference](docs/API.md)**: every endpoint with examples

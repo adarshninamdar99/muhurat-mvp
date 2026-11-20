@@ -43,6 +43,9 @@ async function run<T>(model: string, input: Record<string, unknown>, shape: z.Zo
 
 export const falProvider: AiProvider = {
   name: "fal",
+  maxReferences: 8,
+  referenceIndexBase: 1,
+  capabilities: { realPictures: true, realDepth: true, realVideo: true },
 
   async analyzeVenue({ photo }): Promise<GeneratedFile> {
     const imageUrl = await upload(photo);

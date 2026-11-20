@@ -1,4 +1,4 @@
-/** The seven studio steps, in order. The URL is /p/<projectId>/<key>. */
+/** The eight studio steps, in order. The URL is /p/<projectId>/<key>. */
 export const STEPS = [
   { key: "couple", title: "Couple" },
   { key: "venue", title: "Venue" },
@@ -6,6 +6,7 @@ export const STEPS = [
   { key: "outfits", title: "Outfits" },
   { key: "shots", title: "Shots" },
   { key: "video", title: "Video" },
+  { key: "share", title: "Share" },
   { key: "book", title: "Book" },
 ] as const;
 

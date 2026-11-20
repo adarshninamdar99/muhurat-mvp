@@ -16,24 +16,25 @@ export default function HomePage() {
           <span className="text-xs text-muted">for A Lovers Card</span>
         </div>
         {env.AI_PROVIDER === "mock" && <span className="border border-line px-2.5 py-1 text-xs text-muted">Demo mode</span>}
+        {env.AI_PROVIDER === "cloudflare" && <span className="border border-line px-2.5 py-1 text-xs text-muted">Free AI</span>}
       </header>
 
       <main className="mx-auto grid max-w-5xl grid-cols-[1.1fr_1fr] gap-12 px-7 py-14 max-md:grid-cols-1 max-md:gap-8 max-md:px-4 max-md:py-8">
         <section className="flex flex-col gap-5">
           <h1 className="font-display text-5xl font-medium leading-[1.08] max-md:text-4xl">See the wedding before you book it</h1>
           <p className="max-w-prose text-lg text-muted">
-            Add a few photos of the couple and their venue, choose décor and outfits, and get six matching pictures of their wedding, plus short
-            clips. The look they like becomes a priced décor list for vendors.
+            Add a few photos of the couple and their venue, choose their tradition, muhurat and décor, and see six pictures of their own rituals.
+            Then watch it as a short film, let the family vote, and turn the favourite look into a priced décor list for vendors.
           </p>
           <ol className="grid gap-2 text-sm text-muted">
             <li>
-              <b className="text-ink">1.</b> Add photos of the couple
+              <b className="text-ink">1.</b> Add photos of the couple, their tradition and muhurat
             </li>
             <li>
               <b className="text-ink">2.</b> Pick the venue, décor and outfits
             </li>
             <li>
-              <b className="text-ink">3.</b> Draw the shots, make a clip, ask vendors for quotes
+              <b className="text-ink">3.</b> Draw the shots, play the wedding film, share with family, ask vendors for quotes
             </li>
           </ol>
         </section>

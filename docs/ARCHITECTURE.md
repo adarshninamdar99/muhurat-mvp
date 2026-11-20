@@ -54,17 +54,19 @@ erDiagram
   projects ||--o{ jobs : runs
   projects ||--o{ usage_events : costs
   projects ||--o{ quote_requests : asks
+  projects ||--o{ votes : "family loves"
 ```
 
 | Table | One row is | Key fields |
 | --- | --- | --- |
-| `projects` | One couple's preview | names, 7 selection keys (from the catalog), venue photo and depth paths |
+| `projects` | One couple's preview | names, 9 selection keys (from the catalog, including tradition and time), venue photo and depth paths, `share_token` |
 | `photos` | A photo of the bride or groom | person, path, size |
 | `shots` | One picture for one template (unique per project + template) | status, image path, `selection_hash`, prompt used |
 | `clips` | A video made from a shot | camera move, status, video path, `preview_only` |
 | `jobs` | One piece of background work | type, JSON payload, status, attempts, progress text, error |
 | `usage_events` | One AI call | provider, model, kind, cost in USD and INR, duration |
 | `quote_requests` | A request for vendor quotes | line items (JSON), totals |
+| `votes` | One family member's ♥ on one shot | template key, voter ID (random, from their browser), optional name; unique per project + shot + voter |
 
 Schema: `src/server/db/schema.ts`. Migrations: `drizzle/`. They are applied automatically when the server starts.
 
@@ -100,7 +102,7 @@ Generative models do not remember earlier pictures. To keep décor, colours and 
 
 ### Out-of-date detection
 
-When a shot finishes, it stores a `selection_hash`: a fingerprint of the seven selections, the venue photo and the couple's photo IDs. If any of these change afterwards, the stored hash no longer matches, and the shot shows **Out of date**. The screen then offers one button to redraw exactly those shots. Nothing is redrawn automatically, because each redraw costs money.
+When a shot finishes, it stores a `selection_hash`: a fingerprint of the nine selections, the venue photo and the couple's photo IDs. If any of these change afterwards, the stored hash no longer matches, and the shot shows **Out of date**. The screen then offers one button to redraw exactly those shots. Nothing is redrawn automatically, because each redraw costs money.
 
 ## The job queue
 

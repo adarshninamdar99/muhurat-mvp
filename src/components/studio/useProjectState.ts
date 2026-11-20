@@ -71,6 +71,7 @@ export function useProjectState(initial: ProjectState) {
     clearVenue: () => act(() => api.clearVenue(id), "Venue photo removed"),
     drawShots: (keys: string[]) => act(() => api.drawShots(id, keys)),
     makeClip: (shotId: string, moveKey: string) => act(() => api.makeClip(id, shotId, moveKey)),
+    refresh: () => act(() => api.getProject(id)),
   };
 }
 

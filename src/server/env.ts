@@ -8,8 +8,10 @@ import { z } from "zod";
  * See `.env.example` for what each setting means.
  */
 const schema = z.object({
-  AI_PROVIDER: z.enum(["mock", "fal"]).default("mock"),
+  AI_PROVIDER: z.enum(["mock", "cloudflare", "fal"]).default("mock"),
   FAL_KEY: z.string().optional().default(""),
+  CLOUDFLARE_ACCOUNT_ID: z.string().optional().default(""),
+  CLOUDFLARE_API_TOKEN: z.string().optional().default(""),
   DATABASE_PATH: z.string().default("./data/muhurat.db"),
   STORAGE_DIR: z.string().default("./data/files"),
   ADMIN_PASSWORD: z.string().default("change-me"),
@@ -28,6 +30,11 @@ function load(): Env {
   const env = parsed.data;
   if (env.AI_PROVIDER === "fal" && !env.FAL_KEY) {
     throw new Error("AI_PROVIDER is 'fal' but FAL_KEY is empty. Add your fal.ai key to .env.local or set AI_PROVIDER=mock.");
+  }
+  if (env.AI_PROVIDER === "cloudflare" && (!env.CLOUDFLARE_ACCOUNT_ID || !env.CLOUDFLARE_API_TOKEN)) {
+    throw new Error(
+      "AI_PROVIDER is 'cloudflare' but CLOUDFLARE_ACCOUNT_ID or CLOUDFLARE_API_TOKEN is empty. See docs/FREE_AI_SETUP.md, or set AI_PROVIDER=mock.",
+    );
   }
   return env;
 }

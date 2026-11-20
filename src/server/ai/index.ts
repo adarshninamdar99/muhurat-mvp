@@ -12,6 +12,8 @@ export async function getAiProvider(): Promise<AiProvider> {
   if (cached) return cached;
   if (env.AI_PROVIDER === "fal") {
     cached = (await import("./providers/fal")).falProvider;
+  } else if (env.AI_PROVIDER === "cloudflare") {
+    cached = (await import("./providers/cloudflare")).cloudflareProvider;
   } else {
     cached = (await import("./providers/mock")).mockProvider;
   }

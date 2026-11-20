@@ -1,6 +1,8 @@
 import { afterEach, beforeAll, describe, expect, it } from "vitest";
 import { eq } from "drizzle-orm";
-import { ANCHOR_SHOT_KEY, SHOT_TEMPLATES } from "@/config/catalog";
+import { ANCHOR_SHOT_KEY, shotsFor } from "@/config/catalog";
+
+const NORTH = shotsFor("north");
 import { getDb } from "@/server/db/client";
 import { jobs, shots, usageEvents } from "@/server/db/schema";
 import { drainQueue } from "@/server/jobs/worker";
@@ -38,14 +40,14 @@ describe("wedding preview pipeline", () => {
   });
 
   it("draws the anchor shot first, then the rest using it as a reference", async () => {
-    requestShots(db, projectId, SHOT_TEMPLATES.map((t) => t.key));
+    requestShots(db, projectId, NORTH.map((t) => t.key));
     // Before running, only the anchor job is queued; the others wait for it.
     const queued = db.select().from(jobs).where(eq(jobs.status, "queued")).all();
     expect(queued).toHaveLength(1);
 
     await drainQueue(db);
     const state = getProjectState(db, projectId);
-    expect(state.shots).toHaveLength(SHOT_TEMPLATES.length);
+    expect(state.shots).toHaveLength(NORTH.length);
     expect(state.shots.every((s) => s.status === "done" && s.url && !s.stale)).toBe(true);
 
     const rows = db.select().from(shots).where(eq(shots.projectId, projectId)).all();
@@ -81,7 +83,7 @@ describe("wedding preview pipeline", () => {
 
   it("records every AI call for the cost dashboard", () => {
     const events = db.select().from(usageEvents).where(eq(usageEvents.projectId, projectId)).all();
-    expect(events.filter((e) => e.kind === "image").length).toBeGreaterThanOrEqual(SHOT_TEMPLATES.length + 1);
+    expect(events.filter((e) => e.kind === "image").length).toBeGreaterThanOrEqual(NORTH.length + 1);
     expect(events.some((e) => e.kind === "video")).toBe(true);
     expect(events.some((e) => e.kind === "depth")).toBe(true);
     expect(getProjectState(db, projectId).spend.images).toBeGreaterThan(0);
@@ -104,6 +106,9 @@ describe("wedding preview pipeline", () => {
     let calls = 0;
     const failing: AiProvider = {
       name: "mock",
+      maxReferences: 8,
+      referenceIndexBase: 1,
+      capabilities: { realPictures: false, realDepth: false, realVideo: false },
       analyzeVenue: async () => {
         throw new Error("boom");
       },

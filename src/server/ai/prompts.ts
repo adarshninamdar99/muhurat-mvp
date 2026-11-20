@@ -9,12 +9,12 @@ import type { SceneContext } from "./types";
  * Keep wording concrete: models follow plain descriptions better than adjectives.
  * Tune the wording here; tests in tests/prompts.test.ts check the structure.
  */
-export function buildShotPrompt(scene: SceneContext, referenceLabels: string[]): string {
+export function buildShotPrompt(scene: SceneContext, referenceLabels: string[], indexBase: 0 | 1 = 1): string {
   const lines: string[] = [];
-  lines.push("Create a photorealistic photograph from an Indian wedding.");
+  lines.push(`Create a photorealistic photograph from ${scene.tradition.prompt}, taken ${scene.time.prompt}.`);
 
   if (referenceLabels.length > 0) {
-    const list = referenceLabels.map((label, i) => `image ${i + 1} is ${label}`).join("; ");
+    const list = referenceLabels.map((label, i) => `image ${i + indexBase} is ${label}`).join("; ");
     lines.push(`Reference images: ${list}.`);
   }
 
@@ -30,7 +30,7 @@ export function buildShotPrompt(scene: SceneContext, referenceLabels: string[]):
   const venueIndex = referenceLabels.findIndex((l) => l.startsWith("the wedding venue"));
   if (scene.venueFromPhoto && venueIndex >= 0) {
     lines.push(
-      `Venue: the real venue shown in image ${venueIndex + 1}. Keep its architecture, layout, floor and surroundings; only add the wedding décor.`,
+      `Venue: the real venue shown in image ${venueIndex + indexBase}. Keep its architecture, layout, floor and surroundings; only add the wedding décor.`,
     );
   } else {
     lines.push(`Venue: ${scene.venue.prompt}.`);
@@ -44,12 +44,12 @@ export function buildShotPrompt(scene: SceneContext, referenceLabels: string[]):
   const anchorIndex = referenceLabels.findIndex((l) => l.startsWith("an earlier photo"));
   if (anchorIndex >= 0) {
     lines.push(
-      `Image ${anchorIndex + 1} is from the same wedding: match its décor, colours, flowers, outfits and lighting exactly, from this new camera angle.`,
+      `Image ${anchorIndex + indexBase} is from the same wedding: match its décor, colours, flowers, outfits and lighting exactly, from this new camera angle.`,
     );
   }
 
   lines.push(
-    "Style: natural professional wedding photography, soft flattering light, realistic skin texture, true-to-life colours, 16:9 landscape. No text, no watermark, no extra brides or grooms.",
+    "Style: natural professional wedding photography, flattering light true to the time of day, realistic skin texture, true-to-life colours, 16:9 landscape. No text, no watermark, no extra brides or grooms.",
   );
   return lines.join("\n");
 }

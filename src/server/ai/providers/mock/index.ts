@@ -30,6 +30,9 @@ async function venueDataUri(ref: ReferenceImage | undefined): Promise<string | u
 
 export const mockProvider: AiProvider = {
   name: "mock",
+  maxReferences: 8,
+  referenceIndexBase: 1,
+  capabilities: { realPictures: false, realDepth: false, realVideo: false },
 
   async analyzeVenue({ photo }): Promise<GeneratedFile> {
     await pause(DEMO_DELAY_MS);

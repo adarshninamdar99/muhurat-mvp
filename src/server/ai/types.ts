@@ -1,6 +1,8 @@
 import type {
   BrideOutfit,
   CameraMove,
+  CeremonyTime,
+  Tradition,
   DecorTheme,
   Flower,
   GroomOutfit,
@@ -18,7 +20,13 @@ import type {
  * and register it in ./index.ts. Nothing else needs to change.
  */
 export interface AiProvider {
-  readonly name: "fal" | "mock";
+  readonly name: "fal" | "cloudflare" | "mock";
+  /** Most reference images the picture model accepts per call. */
+  readonly maxReferences: number;
+  /** How the model counts images in prompts: "image 0" (0) or "image 1" (1). */
+  readonly referenceIndexBase: 0 | 1;
+  /** What this provider really does (the screens label stand-ins honestly). */
+  readonly capabilities: { realPictures: boolean; realDepth: boolean; realVideo: boolean };
   /** Makes a depth map from the venue photo (lighter = closer). */
   analyzeVenue(input: { photo: ReferenceImage }): Promise<GeneratedFile>;
   /** Makes one wedding picture from reference photos and a prompt. */
@@ -38,6 +46,8 @@ export interface ReferenceImage {
 export interface SceneContext {
   brideName: string;
   groomName: string;
+  tradition: Tradition;
+  time: CeremonyTime;
   venue: VenuePreset;
   venueFromPhoto: boolean;
   theme: DecorTheme;

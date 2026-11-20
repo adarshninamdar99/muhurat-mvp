@@ -4,7 +4,7 @@ import clsx from "clsx";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { ANCHOR_SHOT_KEY } from "@/config/catalog";
+import { ANCHOR_SHOT_KEY, catalog } from "@/config/catalog";
 import { formatInr } from "@/lib/format";
 import type { ClipDTO, ProjectState } from "@/lib/types";
 import { Button } from "@/components/ui/Button";
@@ -20,6 +20,7 @@ import { OutfitsPanel } from "./panels/OutfitsPanel";
 import { ShotsPanel } from "./panels/ShotsPanel";
 import { VideoPanel } from "./panels/VideoPanel";
 import { BookPanel } from "./panels/BookPanel";
+import { SharePanel } from "./panels/SharePanel";
 
 /** Props every step panel receives. */
 export interface PanelProps {
@@ -37,6 +38,7 @@ const PANELS: Record<StepKey, (p: PanelProps) => React.ReactNode> = {
   outfits: OutfitsPanel,
   shots: ShotsPanel,
   video: VideoPanel,
+  share: SharePanel,
   book: BookPanel,
 };
 
@@ -52,7 +54,10 @@ function StudioInner({ initial, step }: { initial: ProjectState; step: StepKey }
   const project = useProjectState(initial);
   const { state } = project;
   const router = useRouter();
-  const [activeKey, setActiveKey] = useState<string>(defaultShotFor(step));
+  const [chosenKey, setActiveKey] = useState<string>(defaultShotFor(step, initial.selections.traditionKey));
+  // If the couple switches tradition, a ritual shot from the old one falls back to the first shot.
+  const traditionShots = catalog.tradition(state.selections.traditionKey).shots;
+  const activeKey = traditionShots.includes(chosenKey) ? chosenKey : ANCHOR_SHOT_KEY;
   const [view, setView] = useState<StageView>(step === "venue" && initial.venuePhotoUrl ? "venue" : "picture");
   const [clip, setClip] = useState<ClipDTO | null>(null);
   const stepIndex = STEPS.findIndex((s) => s.key === step);
@@ -125,7 +130,13 @@ function StudioInner({ initial, step }: { initial: ProjectState; step: StepKey }
             clip={clip && clip.shotId === state.shots.find((s) => s.templateKey === activeKey)?.id ? clip : null}
             onRetry={() => project.drawShots([activeKey])}
           />
-          <Filmstrip shots={state.shots} active={activeKey} onSelect={selectShot} />
+          <Filmstrip
+            shots={state.shots}
+            traditionKey={state.selections.traditionKey}
+            votes={state.votes}
+            active={activeKey}
+            onSelect={selectShot}
+          />
         </section>
         <aside className="flex flex-col gap-5 border-l border-line bg-surface px-6 py-6 max-md:border-l-0 max-md:border-t max-md:px-4">
           <Panel project={project} activeKey={activeKey} setActiveKey={selectShot} playClip={setClip} setView={setView} />
@@ -133,6 +144,10 @@ function StudioInner({ initial, step }: { initial: ProjectState; step: StepKey }
             So far: <b className="text-ink">{state.spend.images}</b> pictures and <b className="text-ink">{state.spend.clips}</b> clips,{" "}
             {state.provider === "mock" ? (
               <>in free demo mode.</>
+            ) : state.provider === "cloudflare" ? (
+              <>
+                all <b className="text-ink">free</b>.
+              </>
             ) : (
               <>
                 about <b className="text-ink">{formatInr(state.spend.inr, 2)}</b> in AI costs.
@@ -144,15 +159,16 @@ function StudioInner({ initial, step }: { initial: ProjectState; step: StepKey }
 
       {state.provider === "mock" && (
         <footer className="border-t border-line px-7 py-3 text-xs text-muted max-md:px-4">
-          Demo mode: pictures are storyboard sketches. Set AI_PROVIDER=fal and a FAL_KEY to make photo-real pictures and real clips.
+          Demo mode: pictures are storyboard sketches. For real AI pictures at no cost, switch to the free Cloudflare setting (see docs/FREE_AI_SETUP.md).
         </footer>
       )}
     </div>
   );
 }
 
-function defaultShotFor(step: StepKey): string {
+function defaultShotFor(step: StepKey, traditionKey: string): string {
   if (step === "couple" || step === "outfits") return "portrait";
-  if (step === "decor") return "varmala";
+  // The tradition's first ritual (varmala, malai maatral, …) shows the décor best.
+  if (step === "decor") return catalog.tradition(traditionKey).shots[1] ?? ANCHOR_SHOT_KEY;
   return ANCHOR_SHOT_KEY;
 }

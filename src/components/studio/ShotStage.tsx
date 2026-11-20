@@ -2,13 +2,14 @@
 
 import clsx from "clsx";
 import Image from "next/image";
-import { catalog, SHOT_TEMPLATES } from "@/config/catalog";
+import { catalog, shotsFor } from "@/config/catalog";
 import { pad2 } from "@/lib/format";
 import type { ClipDTO, ProjectState } from "@/lib/types";
 import { Spinner } from "@/components/ui/Spinner";
 import { Button } from "@/components/ui/Button";
+import { BeforeAfter } from "./BeforeAfter";
 
-export type StageView = "picture" | "venue" | "depth";
+export type StageView = "picture" | "compare" | "venue" | "depth";
 
 /**
  * The large picture in the middle of the studio.
@@ -30,12 +31,14 @@ export function ShotStage({
   onRetry: () => void;
 }) {
   const template = catalog.shot(activeKey);
-  const index = SHOT_TEMPLATES.findIndex((t) => t.key === activeKey) + 1;
+  const list = shotsFor(state.selections.traditionKey);
+  const index = list.findIndex((t) => t.key === activeKey) + 1;
   const shot = state.shots.find((s) => s.templateKey === activeKey);
   const working = shot?.status === "queued" || shot?.status === "running";
   const job = state.activeJobs.find((j) => j.type === "generate_shot" && j.status === "running");
   const venueName = state.venuePhotoUrl ? "Your venue" : catalog.venue(state.selections.venueKey).name;
   const views: { key: StageView; label: string }[] = [{ key: "picture", label: "Picture" }];
+  if (state.venuePhotoUrl && shot?.url) views.push({ key: "compare", label: "Before / after" });
   if (state.venuePhotoUrl) views.push({ key: "venue", label: "Venue photo" }, { key: "depth", label: "Depth" });
 
   return (
@@ -43,7 +46,7 @@ export function ShotStage({
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <div className="text-xs font-semibold uppercase tracking-[0.14em] text-sindoor">
-            Shot {pad2(index)} of {pad2(SHOT_TEMPLATES.length)}
+            Shot {pad2(index)} of {pad2(list.length)} · {catalog.time(state.selections.timeKey).name}
           </div>
           <h1 className="mt-0.5 font-display text-[40px] font-medium leading-tight max-md:text-3xl">{template.name}</h1>
           <div className="text-sm text-muted">
@@ -69,6 +72,9 @@ export function ShotStage({
 
       <figure className="relative mx-auto aspect-video w-full max-w-[1000px] border border-line bg-surface p-2.5">
         <div className="relative h-full w-full overflow-hidden bg-[#f6f2ea]">
+          {view === "compare" && state.venuePhotoUrl && shot?.url && (
+            <BeforeAfter before={state.venuePhotoUrl} after={shot.url} afterLabel={`${template.name}, on the day`} />
+          )}
           {view === "venue" && state.venuePhotoUrl && (
             <Image src={state.venuePhotoUrl} alt="Your venue photo" fill unoptimized sizes="1000px" className="object-cover" />
           )}
@@ -77,7 +83,7 @@ export function ShotStage({
               <>
                 <Image src={state.venueDepthUrl} alt="Depth map of your venue: lighter is closer" fill unoptimized sizes="1000px" className="object-cover" />
                 <figcaption className="absolute bottom-3 right-3 bg-surface px-2.5 py-1.5 text-xs">
-                  {state.provider === "mock" ? "Demo stand-in. Real depth needs a fal.ai key." : "Lighter is closer to the camera"}
+                  {state.capabilities.realDepth ? "Lighter is closer to the camera" : "A quick stand-in sketch of the depth. Real depth needs the paid fal.ai setting."}
                 </figcaption>
               </>
             ) : (

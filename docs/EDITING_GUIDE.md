@@ -30,13 +30,27 @@ When the catalogue grows past a few dozen items, move outfits into a database ta
 
 ## Add a new shot (e.g. “Haldi”)
 
-**File:** `src/config/catalog.ts` → `SHOT_TEMPLATES`
+**File:** `src/config/catalog.ts` → `SHOT_TEMPLATES`, then `TRADITIONS`
 
-1. Copy an entry, set a new `key`, `name`, `framing` and `prompt` (describe the moment and camera angle plainly).
+1. Copy an entry in `SHOT_TEMPLATES`, set a new `key`, `name`, `framing` and `prompt` (describe the moment and camera angle plainly).
 2. `camera`, `couple` and `extras` only affect the demo sketch; copy them from a similar shot.
-3. Keep `entry` first: the first template is the anchor every other shot copies its look from.
+3. Add the new key to the `shots` list of each tradition that should show it. Keep `entry` first: it is the anchor every other shot copies its look from. Six shots per tradition is the tested default.
 
-The filmstrip, Shots step and API pick up the new shot automatically. The “Draw all” button will draw seven.
+The filmstrip, Shots step, film, family page and API pick up the change automatically.
+
+## Add a tradition (e.g. Gujarati) or a muhurat time
+
+**File:** `src/config/catalog.ts` → `TRADITIONS` or `CEREMONY_TIMES`
+
+- A tradition needs a `key`, `name`, short `sub` line, a `prompt` (how the wedding looks: rituals, décor, details) and its six `shots`. Add any new ritual shots to `SHOT_TEMPLATES` first.
+- A time needs a `prompt` for the light (“at dawn, soft pink light”) and three `sky` colours used by the demo sketches and the colour swatches.
+
+## Change the wedding film or save-the-date card
+
+- Timing (seconds per shot, fade length) and camera moves: `src/components/studio/film/timeline.ts`
+- Look of the title cards and captions: `src/components/studio/film/draw.ts`
+- The music: `src/components/studio/film/tanpura.ts` (pitch `SA`, speed `BEAT_S`)
+- Card layout and wording: `src/components/studio/share/saveTheDate.ts`
 
 ## Add a camera move for clips
 

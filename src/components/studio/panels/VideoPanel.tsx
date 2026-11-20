@@ -9,6 +9,7 @@ import { ChoiceGrid } from "@/components/ui/ChoiceGrid";
 import { Note } from "@/components/ui/Note";
 import { Spinner } from "@/components/ui/Spinner";
 import { PanelHeader } from "./PanelHeader";
+import { WeddingFilmButton } from "../film/WeddingFilm";
 
 export function VideoPanel({ project, activeKey, playClip }: PanelProps) {
   const { state } = project;
@@ -53,14 +54,17 @@ export function VideoPanel({ project, activeKey, playClip }: PanelProps) {
       <dl className="grid text-sm">
         <div className="flex justify-between border-b border-line py-2">
           <dt className="text-muted">Length and quality</dt>
-          <dd>5 seconds, 720p</dd>
+          <dd>{state.capabilities.realVideo ? "5 seconds, 720p" : "5-second preview"}</dd>
         </div>
         <div className="flex justify-between border-b border-line py-2">
           <dt className="text-muted">Typical wait</dt>
-          <dd>about a minute</dd>
+          <dd>{state.capabilities.realVideo ? "about a minute" : "instant"}</dd>
         </div>
       </dl>
-      {state.provider === "mock" && <Note>In demo mode the clip is a camera-move preview of the still. Real clips need a fal.ai key.</Note>}
+      {!state.capabilities.realVideo && (
+        <Note>On the free setting, a clip is a camera move over the still picture, played in the browser. Real AI video needs the paid fal.ai setting.</Note>
+      )}
+      <WeddingFilmButton state={state} />
     </>
   );
 }

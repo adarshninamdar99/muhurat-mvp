@@ -2,7 +2,9 @@
 
 import Image from "next/image";
 import { useState } from "react";
+import { CEREMONY_TIMES, TRADITIONS } from "@/config/catalog";
 import type { PanelProps } from "../Studio";
+import { ChoiceGrid } from "@/components/ui/ChoiceGrid";
 import { Note } from "@/components/ui/Note";
 import { PanelHeader } from "./PanelHeader";
 import { StaleNotice } from "./StaleNotice";
@@ -18,6 +20,19 @@ export function CouplePanel({ project }: PanelProps) {
         <NameField label="Bride" value={state.brideName} onSave={(v) => project.update({ brideName: v })} />
         <NameField label="Groom" value={state.groomName} onSave={(v) => project.update({ groomName: v })} />
       </div>
+      <ChoiceGrid
+        label="Wedding tradition"
+        choices={TRADITIONS.map((t) => ({ key: t.key, name: t.name, sub: t.sub }))}
+        value={state.selections.traditionKey}
+        onChange={(key) => project.update({ traditionKey: key })}
+      />
+      <ChoiceGrid
+        label="Muhurat (time of the ceremony)"
+        choices={CEREMONY_TIMES.map((t) => ({ key: t.key, name: t.name, sub: t.sub, swatches: [...t.sky] }))}
+        value={state.selections.timeKey}
+        onChange={(key) => project.update({ timeKey: key })}
+      />
+      <p className="-mt-2 text-xs text-muted">The tradition picks the ritual moments in your shot list. The muhurat sets the light in every picture.</p>
       <PersonPhotos person="bride" name={state.brideName} project={project} />
       <PersonPhotos person="groom" name={state.groomName} project={project} />
       <Note>Best results: face clearly visible, good light, no sunglasses, a mix of front and slight side angles.</Note>

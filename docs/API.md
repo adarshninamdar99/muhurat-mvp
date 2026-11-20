@@ -32,7 +32,7 @@ The project state. The studio polls this every 1.5 s while work is running.
   "id": "6f1c…",
   "brideName": "Priya",
   "groomName": "Arjun",
-  "selections": { "venueKey": "palace", "themeKey": "marigold", "flowerKey": "marigold", "mandapKey": "dome",
+  "selections": { "traditionKey": "north", "timeKey": "golden", "venueKey": "palace", "themeKey": "marigold", "flowerKey": "marigold", "mandapKey": "dome",
                   "lightKey": "fairy", "brideOutfitKey": "ruby", "groomOutfitKey": "ivory" },
   "venuePhotoUrl": "/api/files/projects/6f1c…/venue/….jpg",   // or null
   "venueDepthUrl": "/api/files/projects/6f1c…/venue/….png",   // or null
@@ -41,12 +41,15 @@ The project state. The studio polls this every 1.5 s while work is running.
   "clips": [{ "id": "…", "shotId": "…", "moveKey": "orbit", "status": "done", "url": null, "previewOnly": true, "error": null, "updatedAt": 1763621000000 }],
   "activeJobs": [{ "id": "…", "type": "generate_shot", "status": "running", "progress": "Drawing the picture", "error": null }],
   "spend": { "images": 7, "clips": 1, "inr": 33.4 },
-  "prices": { "imageInr": 3.5, "clipInr": 8.8 },
-  "provider": "fal"
+  "prices": { "imageInr": 3.5, "clipInr": 8.8 },               // 0 on the free and demo settings
+  "provider": "fal",                                           // "mock" | "cloudflare" | "fal"
+  "capabilities": { "realPictures": true, "realDepth": true, "realVideo": true },
+  "allowance": null,                                           // cloudflare: { "picturesToday": 12, "approxDailyLimit": 80 }
+  "votes": { "varmala": 3, "portrait": 1 }                     // family ♥ per shot
 }
 ```
 
-`status` is one of `queued`, `running`, `done`, `failed`. `stale: true` means choices changed after the picture was made.
+`status` is one of `queued`, `running`, `done`, `failed`. `stale: true` means choices changed after the picture was made. `shots` only lists the six shots of the chosen tradition; shots from another tradition are kept and come back if the couple switches back.
 
 ### `PATCH /api/projects/:id`
 Change names or choices. Send any subset:
@@ -98,6 +101,22 @@ The shot must be `done`. Returns the project state (`202`). In demo mode the fin
 
 ### `POST /api/projects/:id/quote`
 Saves a vendor quote request for the current look: `{ "id": "…", "vendorCount": 3 }` (`201`).
+
+## Family share page
+
+### `POST /api/projects/:id/share`
+Returns the secret family link, making it the first time: `{ "path": "/share/Xk2…" }`. The page at that path is public to anyone with the link and read-only (it can only add votes).
+
+### `GET /api/share/:token?voter=<id>`
+The shots and vote counts shown on the family page. `voter` is a random ID the visitor's browser keeps, used to mark which shots they already loved.
+
+```json
+{ "brideName": "Priya", "groomName": "Arjun", "traditionName": "North Indian", "timeName": "Golden hour", "venueName": "Palace courtyard",
+  "shots": [{ "templateKey": "varmala", "name": "Varmala", "url": "/api/files/…", "votes": 3, "mine": true }] }
+```
+
+### `POST /api/share/:token/vote`
+Love or un-love a shot. Body: `{ "templateKey": "varmala", "voterId": "…", "voterName": "Asha aunty", "love": true }`. Repeating a vote is harmless (one per person per shot). Returns the same object as `GET`.
 
 ## Files
 

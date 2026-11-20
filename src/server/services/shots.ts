@@ -2,7 +2,7 @@ import "server-only";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { and, eq } from "drizzle-orm";
-import { ANCHOR_SHOT_KEY, catalog, SHOT_TEMPLATES } from "@/config/catalog";
+import { ANCHOR_SHOT_KEY, catalog } from "@/config/catalog";
 import type { DB } from "@/server/db/client";
 import { shots, type Project, type Shot } from "@/server/db/schema";
 import { enqueueJob } from "@/server/jobs/queue";
@@ -39,8 +39,9 @@ function queueShotRow(db: DB, projectId: string, templateKey: string): Shot {
  * wait and are queued by the anchor job when it finishes.
  */
 export function requestShots(db: DB, projectId: string, templateKeys: string[]): { queued: string[] } {
-  requireProject(db, projectId);
-  const valid = new Set(SHOT_TEMPLATES.map((t) => t.key));
+  const project = requireProject(db, projectId);
+  // Only shots that belong to the couple's tradition can be drawn.
+  const valid = new Set(catalog.tradition(project.traditionKey).shots);
   const keys = [...new Set(templateKeys)].filter((k) => valid.has(k));
   if (keys.length === 0) throw new UserError("Choose at least one shot to draw.");
 
@@ -72,6 +73,8 @@ export function sceneFor(project: Project, templateKey: string): SceneContext {
   return {
     brideName: project.brideName,
     groomName: project.groomName,
+    tradition: catalog.tradition(project.traditionKey),
+    time: catalog.time(project.timeKey),
     venue: catalog.venue(project.venueKey),
     venueFromPhoto: Boolean(project.venuePhotoPath),
     theme: catalog.theme(project.themeKey),
@@ -93,34 +96,55 @@ async function publicImage(relative: string | undefined): Promise<Buffer | null>
   }
 }
 
-/** Collects reference images, in a fixed order, and writes the prompt for one shot. */
-export async function buildShotRequest(db: DB, project: Project, shot: Shot): Promise<ShotRequest> {
+/**
+ * Collects reference images and writes the prompt for one shot.
+ *
+ * Images are gathered in priority order, then cut to what the AI provider
+ * accepts (4 on the free Cloudflare model, 8 on fal.ai). Priority:
+ *   1. one photo of the bride      2. one photo of the groom
+ *   3. the anchor shot (keeps décor and outfits consistent)
+ *   4. the venue photo             5–6. outfit catalogue photos
+ *   7–8. second photos of the bride and groom
+ */
+export async function buildShotRequest(db: DB, project: Project, shot: Shot, limits?: { maxReferences: number; indexBase: 0 | 1 }): Promise<ShotRequest> {
+  const maxReferences = limits?.maxReferences ?? 8;
+  const indexBase = limits?.indexBase ?? 1;
   const scene = sceneFor(project, shot.templateKey);
-  const references: ReferenceImage[] = [];
   const jpeg = (label: string, data: Buffer): ReferenceImage => ({ label, data, contentType: "image/jpeg" });
+  type Candidate = () => Promise<ReferenceImage | null>;
+  const candidates: Candidate[] = [];
 
   const projectPhotos = photosOf(db, project.id);
-  for (const person of ["bride", "groom"] as const) {
-    const mine = projectPhotos.filter((p) => p.person === person).slice(0, PHOTOS_PER_PERSON_IN_PROMPT);
-    for (const [i, photo] of mine.entries()) {
-      references.push(jpeg(`the ${person}, photo ${i + 1} (face reference)`, await readFile(photo.path)));
-    }
-  }
+  const photoOf = (person: "bride" | "groom", n: number): Candidate => async () => {
+    const photo = projectPhotos.filter((p) => p.person === person)[n];
+    return photo ? jpeg(`the ${person}, photo ${n + 1} (face reference)`, await readFile(photo.path)) : null;
+  };
 
-  if (project.venuePhotoPath) references.push(jpeg("the wedding venue", await readFile(project.venuePhotoPath)));
-
-  const brideRef = await publicImage(scene.brideOutfit.referenceImage);
-  if (brideRef) references.push(jpeg("the bride's outfit (catalogue photo)", brideRef));
-  const groomRef = await publicImage(scene.groomOutfit.referenceImage);
-  if (groomRef) references.push(jpeg("the groom's outfit (catalogue photo)", groomRef));
-
+  candidates.push(photoOf("bride", 0), photoOf("groom", 0));
   if (shot.templateKey !== ANCHOR_SHOT_KEY) {
-    const anchor = db.select().from(shots).where(and(eq(shots.projectId, project.id), eq(shots.templateKey, ANCHOR_SHOT_KEY))).get();
-    if (anchor?.status === "done" && anchor.imagePath) {
-      references.push(jpeg("an earlier photo from this same wedding", await readFile(anchor.imagePath)));
-    }
+    candidates.push(async () => {
+      const anchor = db.select().from(shots).where(and(eq(shots.projectId, project.id), eq(shots.templateKey, ANCHOR_SHOT_KEY))).get();
+      return anchor?.status === "done" && anchor.imagePath ? jpeg("an earlier photo from this same wedding", await readFile(anchor.imagePath)) : null;
+    });
+  }
+  candidates.push(async () => (project.venuePhotoPath ? jpeg("the wedding venue", await readFile(project.venuePhotoPath)) : null));
+  candidates.push(async () => {
+    const data = await publicImage(scene.brideOutfit.referenceImage);
+    return data ? jpeg("the bride's outfit (catalogue photo)", data) : null;
+  });
+  candidates.push(async () => {
+    const data = await publicImage(scene.groomOutfit.referenceImage);
+    return data ? jpeg("the groom's outfit (catalogue photo)", data) : null;
+  });
+  for (let n = 1; n < PHOTOS_PER_PERSON_IN_PROMPT; n++) candidates.push(photoOf("bride", n), photoOf("groom", n));
+
+  const references: ReferenceImage[] = [];
+  for (const next of candidates) {
+    if (references.length >= maxReferences) break;
+    const ref = await next();
+    if (ref) references.push(ref);
   }
 
-  const prompt = buildShotPrompt(scene, references.map((r) => r.label));
+  const prompt = buildShotPrompt(scene, references.map((r) => r.label), indexBase);
   return { prompt, references, scene };
 }

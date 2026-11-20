@@ -206,7 +206,7 @@ export function renderStoryboardSvg(s: SceneContext, faces: StoryboardImages): s
   return `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1600" height="900" viewBox="0 0 1600 900">
   <defs>
     <style>.ln{stroke:${INK};stroke-width:1.6;stroke-linejoin:round}.thin{stroke:${INK};stroke-width:.9}</style>
-    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${s.venue.sky[0]}"/><stop offset=".6" stop-color="${s.venue.sky[1]}"/><stop offset="1" stop-color="${s.venue.sky[2]}"/></linearGradient>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${s.time.sky[0]}"/><stop offset=".6" stop-color="${s.time.sky[1]}"/><stop offset="1" stop-color="${s.time.sky[2]}"/></linearGradient>
     <linearGradient id="floor" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${s.venue.floor[0]}"/><stop offset="1" stop-color="${s.venue.floor[1]}"/></linearGradient>
     <filter id="pencil" x="-2%" y="-2%" width="104%" height="104%"><feTurbulence type="fractalNoise" baseFrequency="0.03" numOctaves="2" seed="4" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="4" xChannelSelector="R" yChannelSelector="G"/></filter>
   </defs>
@@ -227,9 +227,10 @@ export function renderStoryboardSvg(s: SceneContext, faces: StoryboardImages): s
     ${garlands}
     ${guests(t.extras?.guests, "front")}
   </g></g>
+  ${s.time.key === "night" ? `<rect width="1600" height="900" fill="#0d1030" fill-opacity=".28"/>` : ""}
   <rect x="0" y="852" width="1600" height="48" fill="#FBF9F5" fill-opacity=".85"/>
   <text x="28" y="884" font-family="Georgia, serif" font-size="22" fill="${INK}">Demo sketch · ${escapeXml(t.name)} · ${escapeXml(s.brideName)} &amp; ${escapeXml(s.groomName)}</text>
-  <text x="1572" y="884" font-family="Arial, sans-serif" font-size="18" fill="#6B655C" text-anchor="end">Add a fal.ai key for photo-real pictures</text>
+  <text x="1572" y="884" font-family="Arial, sans-serif" font-size="18" fill="#6B655C" text-anchor="end">Switch on the free AI setting for real pictures</text>
 </svg>`;
 }
 

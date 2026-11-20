@@ -67,7 +67,8 @@ export async function processJob(db: DB, job: Job): Promise<void> {
     db.update(jobs).set({ status: "done", progress: null, finishedAt: now() }).where(eq(jobs.id, job.id)).run();
   } catch (err) {
     const error = err instanceof Error ? err : new Error(String(err));
-    const finalAttempt = job.attempts >= MAX_ATTEMPTS;
+    // An error can opt out of the retry by setting `retryable = false` (for example, the free daily allowance is used up).
+    const finalAttempt = job.attempts >= MAX_ATTEMPTS || (error as { retryable?: boolean }).retryable === false;
     console.error(`[jobs] ${job.type} ${job.id} failed (attempt ${job.attempts}):`, error.message);
     db.update(jobs)
       .set({ status: finalAttempt ? "failed" : "queued", error: error.message, progress: null, finishedAt: finalAttempt ? now() : null })
