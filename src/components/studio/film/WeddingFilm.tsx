@@ -50,6 +50,9 @@ export function WeddingFilmButton({ state }: { state: ProjectState }) {
 
 type Mode = "loading" | "playing" | "recording" | "ended";
 
+/** As wide as possible, but short enough that the buttons stay on screen on small laptops. */
+const PLAYER_WIDTH = "min(1100px, 100%, calc((100vh - 9rem) * 16 / 9))";
+
 export function FilmPlayer(props: { shots: FilmShot[]; text: FilmText; onClose: () => void }) {
   // Snapshot the shots and words when the player opens, so background updates
   // (polling, votes) don't restart the film halfway through.
@@ -169,9 +172,9 @@ export function FilmPlayer(props: { shots: FilmShot[]; text: FilmText; onClose: 
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-4 bg-[#0e0b09]/95 p-6" role="dialog" aria-modal="true" aria-label="Our wedding film">
-      <canvas ref={canvasRef} width={FILM_W} height={FILM_H} className="aspect-video w-full max-w-[1100px] bg-ink" />
-      <div className="flex w-full max-w-[1100px] flex-wrap items-center gap-3 text-sm text-paper">
+    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-3 bg-[#0e0b09]/95 p-4" role="dialog" aria-modal="true" aria-label="Our wedding film">
+      <canvas ref={canvasRef} width={FILM_W} height={FILM_H} className="aspect-video bg-ink" style={{ width: PLAYER_WIDTH }} />
+      <div className="flex flex-wrap items-center gap-3 text-sm text-paper" style={{ width: PLAYER_WIDTH }}>
         <span className="tabular-nums text-paper/70">
           {mode === "loading" ? "Getting the film ready…" : `${clock(Math.min(time, film.duration))} / ${clock(film.duration)}`}
           {mode === "recording" && <span className="ml-2 text-[#f2a39c]">● Recording, keep this window open</span>}
